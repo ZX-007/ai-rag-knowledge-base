@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.lcx</groupId>
-        <artifactId>rag-knowledge-base</artifactId>
+        <artifactId>ai-rag-knowledge-base</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>trigger</artifactId>
+    <artifactId>ai-rag-trigger</artifactId>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -16,7 +16,7 @@
     <dependencies>
         <dependency>
             <groupId>com.lcx</groupId>
-            <artifactId>api</artifactId>
+            <artifactId>ai-rag-api</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
