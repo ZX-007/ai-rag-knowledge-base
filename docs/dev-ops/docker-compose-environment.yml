@@ -1,18 +1,18 @@
-# docker-comopse -f docker-compose-environment.yml up -d
-version: '3'
+# docker compose -f docker-compose-environment.yml up -d
 services:
-  # 对话模型
-  # ollama pull deepseek-r1:1.5b
-  # 运行模型
-  # ollama run deepseek-r1:1.5b
-  # 联网模型
-  # ollama pull nomic-embed-text
   ollama:
     image: ollama/ollama:0.5.10
     container_name: ollama
     restart: unless-stopped
     ports:
       - "11434:11434"
+    volumes:
+      - /opt/llm/ollama/models:/root/.ollama/models
+    networks:
+      - network
+    # 对话模型：ollama run deepseek-r1:1.5b
+    # 嵌入模型：ollama run nomic-embed-text
+
   redis:
     image: redis:6.2
     container_name: redis
@@ -20,48 +20,46 @@ services:
     hostname: redis
     privileged: true
     ports:
-      - 16379:6379
+      - "16379:6379"
     volumes:
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
     networks:
-      - my-network
+      - network
     healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
+      test: [ "CMD", "redis-cli", "-a", "admin321", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 3
-  # RedisAdmin https://github.com/joeferner/redis-commander
-  # 账密 admin/admin
   redis-admin:
     image: spryker/redis-commander:0.8.0
     container_name: redis-admin
     hostname: redis-commander
     restart: always
     ports:
-      - 8081:8081
+      - "8081:8081"
     environment:
-      - REDIS_HOSTS=local:redis:6379
+      - REDIS_HOSTS=local:redis:6379:0:admin321
       - HTTP_USER=admin
-      - HTTP_PASSWORD=admin
+      - HTTP_PASSWORD=admin321
       - LANG=C.UTF-8
       - LANGUAGE=C.UTF-8
       - LC_ALL=C.UTF-8
     networks:
-      - my-network
+      - network
     depends_on:
       redis:
         condition: service_healthy
 
-  vector_db:
+  pgvector:
     image: pgvector/pgvector:v0.5.0
-    container_name: vector_db
+    container_name: pgvector
     restart: always
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=springai
-      - PGPASSWORD=postgres
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin321
+      - PGPASSWORD=admin321
+      - POSTGRES_DB=ai-rag-knowledge-base
     volumes:
       - ./pgvector/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     logging:
@@ -69,15 +67,31 @@ services:
         max-size: 10m
         max-file: "3"
     ports:
-      - '5432:5432'
+      - '15432:5432'
     healthcheck:
-      test: "pg_isready -U postgres -d vector_store"
-      interval: 2s
-      timeout: 20s
+      test: "pg_isready -U admin -d ai-rag-knowledge-base"
+      interval: 5s
+      timeout: 30s
       retries: 10
     networks:
-      - my-network
+      - network
+      
+  # pg 管理工具
+  pg-admin:
+    image: dpage/pgadmin4:9.1.0
+    container_name: pg-admin
+    restart: always
+    ports:
+      - "5050:80"
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@qq.com
+      - PGADMIN_DEFAULT_PASSWORD=admin321
+    depends_on:
+      pgvector:
+        condition: service_healthy
+    networks:
+      - network
 
 networks:
-  my-network:
+  network:
     driver: bridge
