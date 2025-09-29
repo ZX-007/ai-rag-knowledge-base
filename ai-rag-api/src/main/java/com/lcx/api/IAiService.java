@@ -1,0 +1,49 @@
+package com.lcx.api;
+
+import org.springframework.ai.chat.ChatResponse;
+import reactor.core.publisher.Flux;
+
+/**
+ * AI 服务通用接口
+ * <p>
+ * 定义了 AI 服务的标准接口，包括同步和异步生成功能。
+ * 该接口可以被不同的 AI 服务实现（如 Ollama、OpenAI 等）。
+ * </p>
+ *
+ * @author lcx
+ * @version 1.0
+ * @since 1.0
+ */
+public interface IAiService {
+
+    /**
+     * 生成 AI 回复
+     * <p>
+     * 使用指定的模型和消息生成 AI 回复，返回完整的响应结果。
+     * 这是一个同步方法，会等待 AI 服务完成处理后再返回结果。
+     * </p>
+     *
+     * @param model   使用的 AI 模型名称，如 "llama2", "gpt-3.5-turbo" 等
+     * @param message 用户输入的消息内容
+     * @return AI 生成的完整回复，包含回复内容、元数据等信息
+     * @throws IllegalArgumentException 当模型名称或消息为空时抛出
+     * @throws RuntimeException 当 AI 服务调用失败时抛出
+     */
+    ChatResponse generate(String model, String message);
+
+    /**
+     * 流式生成 AI 回复
+     * <p>
+     * 使用指定的模型和消息流式生成 AI 回复，返回响应流。
+     * 这是一个异步方法，可以实时获取 AI 生成的内容，适用于长文本生成场景。
+     * </p>
+     *
+     * @param model   使用的 AI 模型名称，如 "llama2", "gpt-3.5-turbo" 等
+     * @param message 用户输入的消息内容
+     * @return AI 生成的回复流，可以实时订阅获取生成的内容片段
+     * @throws IllegalArgumentException 当模型名称或消息为空时抛出
+     * @throws RuntimeException 当 AI 服务调用失败时抛出
+     */
+    Flux<ChatResponse> generateStream(String model, String message);
+
+}
