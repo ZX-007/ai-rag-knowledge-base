@@ -2,5 +2,17 @@ server:
   port: 8080
 
 spring:
-    application:
-      name: app
+  application:
+    name: ai-rag-knowledge-base
+  profiles:
+    active: dev # 默认启用开发环境
+  ai:
+    ollama:
+      base-url: http://localhost:11434
+      chat:
+        model: deepseek-r1:1.5b
+
+logging:
+  level:
+    root: debug
+  config: classpath:logback-spring.xml
