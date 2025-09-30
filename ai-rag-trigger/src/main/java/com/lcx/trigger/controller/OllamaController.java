@@ -43,7 +43,6 @@ public class OllamaController{
      */
     private final OllamaService ollamaService;
 
-
     @RequestMapping(value = "/generate", method = RequestMethod.GET)
     public ChatResponse generate(@RequestParam String model, @RequestParam String message) {
         log.info("收到 AI 回复生成请求，模型: {}, 消息长度: {}", model, message.length());
@@ -57,7 +56,6 @@ public class OllamaController{
             throw e;
         }
     }
-
 
     @RequestMapping(value = "/generate_stream", method = RequestMethod.GET)
     public Flux<ChatResponse> generateStream(@RequestParam String model, @RequestParam String message) {

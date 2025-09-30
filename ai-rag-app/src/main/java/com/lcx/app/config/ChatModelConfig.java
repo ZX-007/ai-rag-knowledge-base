@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class ModelConfig {
+public class ChatModelConfig {
 
     @Value("${spring.ai.ollama.base-url}")
     private String baseUrl;

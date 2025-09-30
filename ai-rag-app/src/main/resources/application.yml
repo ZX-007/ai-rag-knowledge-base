@@ -6,11 +6,23 @@ spring:
     name: ai-rag-knowledge-base
   profiles:
     active: dev # 默认启用开发环境
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://118.196.28.78:15432/ai-rag-knowledge-base
+    type: com.zaxxer.hikari.HikariDataSource
+    username: admin
+    password: admin321
   ai:
     ollama:
       base-url: http://localhost:11434
       chat:
-        model: deepseek-r1:1.5b
+        enabled: true
+        options:
+          model: deepseek-r1:1.5b
+      embedding:
+        options:
+          num-batch: 512
+        model: nomic-embed-text
 
 logging:
   level:
