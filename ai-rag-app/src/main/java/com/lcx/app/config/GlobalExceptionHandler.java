@@ -7,6 +7,8 @@ import com.lcx.api.exception.SystemException;
 import com.lcx.api.response.Response;
 import com.lcx.api.response.ResponseCode;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.ConstraintViolationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindException;
@@ -119,6 +121,23 @@ public class GlobalExceptionHandler {
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining("; "));
         log.warn("处理绑定异常: {}", message, e);
+        return Response.paramError(message);
+    }
+
+    /**
+     * 处理约束违反异常（@Valid注解在方法参数上的校验）
+     *
+     * @param request HTTP请求
+     * @param e       异常
+     * @return 错误响应
+     */
+    @ExceptionHandler(ConstraintViolationException.class)
+    public Response<Void> handleConstraintViolationException(
+            HttpServletRequest request, ConstraintViolationException e) {
+        String message = e.getConstraintViolations().stream()
+                .map(ConstraintViolation::getMessage)
+                .collect(Collectors.joining("; "));
+        log.warn("处理约束违反异常: {}", message, e);
         return Response.paramError(message);
     }
 
