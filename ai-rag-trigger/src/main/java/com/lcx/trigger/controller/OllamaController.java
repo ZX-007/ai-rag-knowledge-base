@@ -1,9 +1,14 @@
 package com.lcx.trigger.controller;
 
-import com.lcx.trigger.service.OllamaService;
+import com.lcx.api.IAiService;
+import com.lcx.api.IOllamaService;
+import com.lcx.api.dto.ChatRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.ai.chat.ChatResponse;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 
@@ -24,15 +29,16 @@ import reactor.core.publisher.Flux;
  * @author lcx
  * @version 1.0
  * @since 1.0
- * @see com.lcx.api.IAiService 通用 AI 服务接口
- * @see com.lcx.trigger.service.OllamaService Ollama 服务接口
+ * @see IAiService 通用 AI 服务接口
+ * @see IOllamaService Ollama 服务接口
  */
 @Slf4j
-@RestController()
+@Validated
+@RestController
 @CrossOrigin("*")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/ollama")
-public class OllamaController{
+public class OllamaController {
 
     /**
      * Ollama AI 服务
@@ -41,34 +47,24 @@ public class OllamaController{
      * 通过构造函数注入，确保依赖注入的正确性。
      * </p>
      */
-    private final OllamaService ollamaService;
+    private final IOllamaService IOllamaService;
 
-    @RequestMapping(value = "/generate", method = RequestMethod.GET)
-    public ChatResponse generate(@RequestParam String model, @RequestParam String message) {
-        log.info("收到 AI 回复生成请求，模型: {}, 消息长度: {}", model, message.length());
+    @RequestMapping(value = "/generate", method = RequestMethod.POST)
+    public ChatResponse generate(@Valid @RequestBody ChatRequest request) {
+        log.info("收到 AI 回复生成请求，模型: {}, 消息长度: {}", request.getModel(), request.getMessage().length());
         
-        try {
-            ChatResponse response = ollamaService.generate(model, message);
-            log.info("AI 回复生成成功，模型: {}", model);
-            return response;
-        } catch (Exception e) {
-            log.error("AI 回复生成失败，模型: {}, 错误: {}", model, e.getMessage(), e);
-            throw e;
-        }
+        ChatResponse response = IOllamaService.generate(request.getModel(), request.getMessage());
+        log.info("AI 回复生成成功，模型: {}", request.getModel());
+        return response;
     }
 
-    @RequestMapping(value = "/generate_stream", method = RequestMethod.GET)
-    public Flux<ChatResponse> generateStream(@RequestParam String model, @RequestParam String message) {
-        log.info("收到 AI 流式回复生成请求，模型: {}, 消息长度: {}", model, message.length());
+    @RequestMapping(value = "/generate_stream", method = RequestMethod.POST)
+    public Flux<ChatResponse> generateStream(@Valid @RequestBody ChatRequest request) {
+        log.info("收到 AI 流式回复生成请求，模型: {}, 消息长度: {}", request.getModel(), request.getMessage().length());
         
-        try {
-            Flux<ChatResponse> responseStream = ollamaService.generateStream(model, message);
-            log.info("AI 流式回复生成成功，模型: {}", model);
-            return responseStream;
-        } catch (Exception e) {
-            log.error("AI 流式回复生成失败，模型: {}, 错误: {}", model, e.getMessage(), e);
-            throw e;
-        }
+        Flux<ChatResponse> responseStream = IOllamaService.generateStream(request.getModel(), request.getMessage());
+        log.info("AI 流式回复生成成功，模型: {}", request.getModel());
+        return responseStream;
     }
 
 }    

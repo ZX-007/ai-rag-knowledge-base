@@ -1,6 +1,8 @@
-package com.lcx.trigger.service.impl;
+package com.lcx.trigger.service;
 
-import com.lcx.trigger.service.OllamaService;
+
+import com.lcx.api.IOllamaService;
+import com.lcx.api.exception.SystemException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.ChatResponse;
@@ -24,13 +26,13 @@ import reactor.core.publisher.Flux;
  * @author lcx
  * @version 1.0
  * @since 1.0
- * @see com.lcx.trigger.service.OllamaService Ollama 服务接口
+ * @see com.lcx.api.IOllamaService Ollama 服务接口
  * @see org.springframework.ai.ollama.OllamaChatClient Ollama 聊天客户端
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OllamaServiceImpl implements OllamaService {
+public class OllamaServiceImpl implements IOllamaService {
 
     /**
      * Ollama 聊天客户端
@@ -52,7 +54,7 @@ public class OllamaServiceImpl implements OllamaService {
      * @param message 用户输入的消息内容
      * @return AI 生成的完整回复，包含回复内容、元数据等信息
      * @throws IllegalArgumentException 当模型名称或消息为空时抛出
-     * @throws RuntimeException 当 Ollama 服务调用失败时抛出
+     * @throws SystemException 当 Ollama 服务调用失败时抛出
      */
     @Override
     public ChatResponse generate(String model, String message) {
@@ -69,7 +71,7 @@ public class OllamaServiceImpl implements OllamaService {
             return response;
         } catch (Exception e) {
             log.error("AI 回复生成失败，模型: {}, 错误: {}", model, e.getMessage(), e);
-            throw new RuntimeException("AI 回复生成失败: " + e.getMessage(), e);
+            throw SystemException.aiServiceError("AI 回复生成失败: " + e.getMessage(), e);
         }
     }
 
@@ -84,7 +86,7 @@ public class OllamaServiceImpl implements OllamaService {
      * @param message 用户输入的消息内容
      * @return AI 生成的回复流，可以实时订阅获取生成的内容片段
      * @throws IllegalArgumentException 当模型名称或消息为空时抛出
-     * @throws RuntimeException 当 Ollama 服务调用失败时抛出
+     * @throws SystemException 当 Ollama 服务调用失败时抛出
      */
     @Override
     public Flux<ChatResponse> generateStream(String model, String message) {
@@ -105,7 +107,7 @@ public class OllamaServiceImpl implements OllamaService {
                     .doOnComplete(() -> log.debug("AI 回复流生成完成，模型: {}", model));
         } catch (Exception e) {
             log.error("AI 回复流创建失败，模型: {}, 错误: {}", model, e.getMessage(), e);
-            throw new RuntimeException("AI 回复流创建失败: " + e.getMessage(), e);
+            throw SystemException.aiServiceError("AI 回复流创建失败: " + e.getMessage(), e);
         }
     }
 }

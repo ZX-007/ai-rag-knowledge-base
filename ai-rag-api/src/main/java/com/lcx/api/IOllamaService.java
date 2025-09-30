@@ -1,6 +1,4 @@
-package com.lcx.trigger.service;
-
-import com.lcx.api.IAiService;
+package com.lcx.api;
 
 /**
  * Ollama AI 服务接口
@@ -16,10 +14,10 @@ import com.lcx.api.IAiService;
  * @author lcx
  * @version 1.0
  * @since 1.0
- * @see com.lcx.api.IAiService 通用 AI 服务接口
+ * @see IAiService 通用 AI 服务接口
  * @see <a href="https://ollama.ai/">Ollama 官方网站</a>
  */
-public interface OllamaService extends IAiService {
+public interface IOllamaService extends IAiService {
     
     // 可以在这里添加 Ollama 特有的方法
     // 例如：

@@ -8,8 +8,8 @@
  * 主要组件：
  * <ul>
  *   <li>{@link com.lcx.trigger.controller.OllamaController} - Ollama AI 控制器，提供 REST API 接口</li>
- *   <li>{@link com.lcx.trigger.service.OllamaService} - Ollama AI 服务接口</li>
- *   <li>{@link com.lcx.trigger.service.impl.OllamaServiceImpl} - Ollama AI 服务实现类</li>
+ *   <li>{@link com.lcx.api.IOllamaService} - Ollama AI 服务接口</li>
+ *   <li>{@link com.lcx.trigger.service.OllamaServiceImpl} - Ollama AI 服务实现类</li>
  * </ul>
  * </p>
  * <p>
