@@ -1,16 +1,26 @@
 package com.lcx.trigger.service;
 
 
-import com.lcx.api.IOllamaService;
+import com.lcx.api.IAiService;
 import com.lcx.api.exception.SystemException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.ChatResponse;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.chat.prompt.SystemPromptTemplate;
+import org.springframework.ai.document.Document;
 import org.springframework.ai.ollama.OllamaChatClient;
 import org.springframework.ai.ollama.api.OllamaOptions;
+import org.springframework.ai.vectorstore.PgVectorStore;
+import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Ollama AI 服务实现类
@@ -26,36 +36,17 @@ import reactor.core.publisher.Flux;
  * @author lcx
  * @version 1.0
  * @since 1.0
- * @see com.lcx.api.IOllamaService Ollama 服务接口
+ * @see com.lcx.api.IAiService AI 服务接口
  * @see org.springframework.ai.ollama.OllamaChatClient Ollama 聊天客户端
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class OllamaServiceImpl implements IOllamaService {
+public class OllamaServiceImpl implements IAiService {
 
-    /**
-     * Ollama 聊天客户端
-     * <p>
-     * 用于与 Ollama 服务进行通信，执行 AI 模型的调用。
-     * 通过构造函数注入，确保依赖注入的正确性。
-     * </p>
-     */
     private final OllamaChatClient chatClient;
+    private final PgVectorStore pgVectorStore;
 
-    /**
-     * 生成 AI 回复（同步方式）
-     * <p>
-     * 使用指定的模型和消息生成 AI 回复，等待完整响应后返回。
-     * 适用于需要完整响应的场景，如短文本生成。
-     * </p>
-     *
-     * @param model   使用的 AI 模型名称，如 "llama2", "codellama" 等
-     * @param message 用户输入的消息内容
-     * @return AI 生成的完整回复，包含回复内容、元数据等信息
-     * @throws IllegalArgumentException 当模型名称或消息为空时抛出
-     * @throws SystemException 当 Ollama 服务调用失败时抛出
-     */
     @Override
     public ChatResponse generate(String model, String message) {
         log.debug("开始生成 AI 回复，模型: {}, 消息长度: {}", model, message.length());
@@ -75,19 +66,6 @@ public class OllamaServiceImpl implements IOllamaService {
         }
     }
 
-    /**
-     * 流式生成 AI 回复（异步方式）
-     * <p>
-     * 使用指定的模型和消息流式生成 AI 回复，返回响应流。
-     * 适用于长文本生成场景，可以实时获取生成的内容片段。
-     * </p>
-     *
-     * @param model   使用的 AI 模型名称，如 "llama2", "codellama" 等
-     * @param message 用户输入的消息内容
-     * @return AI 生成的回复流，可以实时订阅获取生成的内容片段
-     * @throws IllegalArgumentException 当模型名称或消息为空时抛出
-     * @throws SystemException 当 Ollama 服务调用失败时抛出
-     */
     @Override
     public Flux<ChatResponse> generateStream(String model, String message) {
         log.debug("开始流式生成 AI 回复，模型: {}, 消息长度: {}", model, message.length());
@@ -109,5 +87,32 @@ public class OllamaServiceImpl implements IOllamaService {
             log.error("AI 回复流创建失败，模型: {}, 错误: {}", model, e.getMessage(), e);
             throw SystemException.aiServiceError("AI 回复流创建失败: " + e.getMessage(), e);
         }
+    }
+
+    @Override
+    public Flux<ChatResponse> generateStreamRag(String model, String ragTag, String message) {
+        String SYSTEM_PROMPT = """
+                Use the information from the DOCUMENTS section to provide accurate answers but act as if you knew this information innately.
+                If unsure, simply state that you don't know.
+                Another thing you need to note is that your reply must be in Chinese!
+                DOCUMENTS:
+                    {documents}
+                """;
+
+        // 创建搜索请求：指定文档
+        SearchRequest request = SearchRequest.query(message)
+                .withTopK(5)
+                .withFilterExpression("knowledge == '" + ragTag + "'");
+
+        List<Document> documents = pgVectorStore.similaritySearch(request);
+        String documentCollectors = documents.stream()
+                .map(Document::getContent)
+                .collect(Collectors.joining());
+        Message ragMessage = new SystemPromptTemplate(SYSTEM_PROMPT).createMessage(Map.of("documents", documentCollectors));
+
+        return chatClient.stream(new Prompt(
+                List.of(new UserMessage(message),ragMessage),
+                OllamaOptions.create().withModel(model)
+        ));
     }
 }

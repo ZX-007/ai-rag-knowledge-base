@@ -41,7 +41,7 @@ services:
     environment:
       - REDIS_HOSTS=local:redis:6379:0:admin321
       - HTTP_USER=admin
-        - HTTP_PASSWORD=admin321
+      - HTTP_PASSWORD=admin321
       - LANG=C.UTF-8
       - LANGUAGE=C.UTF-8
       - LC_ALL=C.UTF-8
