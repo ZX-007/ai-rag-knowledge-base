@@ -1,5 +1,6 @@
 package com.lcx.api.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -95,6 +96,7 @@ public class Response<T> implements Serializable {
      *
      * @return true 如果响应成功，false 否则
      */
+    @JsonIgnore
     public boolean isSuccess() {
         return SUCCESS_CODE.equals(this.code);
     }
@@ -104,6 +106,7 @@ public class Response<T> implements Serializable {
      *
      * @return true 如果响应失败，false 否则
      */
+    @JsonIgnore
     public boolean isFailure() {
         return !isSuccess();
     }

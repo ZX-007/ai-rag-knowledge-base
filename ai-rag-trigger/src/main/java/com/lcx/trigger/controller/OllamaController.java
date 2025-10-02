@@ -3,6 +3,7 @@ package com.lcx.trigger.controller;
 import com.lcx.api.IAiService;
 import com.lcx.api.dto.ChatRequest;
 import com.lcx.api.dto.RagChatRequest;
+import com.lcx.api.response.Response;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,8 @@ import org.springframework.ai.chat.ChatResponse;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
+
+import java.util.List;
 
 /**
  * Ollama AI 控制器
@@ -40,6 +43,33 @@ import reactor.core.publisher.Flux;
 public class OllamaController {
 
     private final IAiService aiService;
+
+    /**
+     * 查询可用的 AI 模型列表
+     * <p>
+     * 获取当前 AI 服务支持的所有可用模型列表。该方法会查询 AI 服务（如 Ollama）的可用模型，
+     * 返回模型名称列表，供前端动态加载和选择。
+     * </p>
+     * <p>
+     * 使用场景：
+     * <ul>
+     *   <li>前端模型选择器动态加载可用模型</li>
+     *   <li>模型管理界面显示所有可用模型</li>
+     *   <li>模型状态检查和验证</li>
+     * </ul>
+     * </p>
+     *
+     * @return 包含可用模型名称列表的响应结果
+     * @throws com.lcx.api.exception.SystemException 当查询模型列表失败时抛出
+     */
+    @RequestMapping(value = "/models", method = RequestMethod.GET)
+    public Response<List<String>> queryAvailableModels() {
+        log.info("收到查询可用模型列表请求");
+
+        List<String> models = aiService.queryAvailableModels();
+        log.info("查询可用模型列表成功，共{}个模型", models.size());
+        return Response.success(models);
+    }
 
     /**
      * 生成 AI 回复

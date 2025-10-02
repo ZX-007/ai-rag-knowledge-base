@@ -3,6 +3,8 @@ package com.lcx.api;
 import org.springframework.ai.chat.ChatResponse;
 import reactor.core.publisher.Flux;
 
+import java.util.List;
+
 /**
  * AI 服务通用接口
  * <p>
@@ -15,6 +17,26 @@ import reactor.core.publisher.Flux;
  * @since 1.0
  */
 public interface IAiService {
+
+    /**
+     * 查询可用的 AI 模型列表
+     * <p>
+     * 获取当前 AI 服务支持的所有可用模型列表。
+     * 该方法会查询 AI 服务的可用模型，返回模型名称列表。
+     * </p>
+     * <p>
+     * 使用场景：
+     * <ul>
+     *   <li>前端模型选择器动态加载可用模型</li>
+     *   <li>模型管理界面显示所有可用模型</li>
+     *   <li>模型状态检查和验证</li>
+     * </ul>
+     * </p>
+     *
+     * @return 可用的 AI 模型名称列表
+     * @throws RuntimeException 当查询模型列表失败时抛出
+     */
+    List<String> queryAvailableModels();
 
     /**
      * 生成 AI 回复

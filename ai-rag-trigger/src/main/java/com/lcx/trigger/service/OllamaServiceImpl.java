@@ -16,6 +16,7 @@ import org.springframework.ai.ollama.api.OllamaOptions;
 import org.springframework.ai.vectorstore.PgVectorStore;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
@@ -46,6 +47,37 @@ public class OllamaServiceImpl implements IAiService {
 
     private final OllamaChatClient chatClient;
     private final PgVectorStore pgVectorStore;
+    private final RestTemplate restTemplate;
+
+    @Override
+    public List<String> queryAvailableModels() {
+        return List.of("deepseek-r1:1.5b");
+//        log.debug("开始查询可用的 AI 模型列表");
+//
+//        try {
+//            // 直接调用 Ollama 的 REST API 获取模型列表
+//            String url = "http://localhost:11434/api/tags";
+//            @SuppressWarnings("unchecked")
+//            Map<String, Object> response = restTemplate.getForObject(url, Map.class);
+//
+//            if (response != null && response.containsKey("models")) {
+//                @SuppressWarnings("unchecked")
+//                List<Map<String, Object>> models = (List<Map<String, Object>>) response.get("models");
+//                List<String> modelNames = models.stream()
+//                        .map(model -> (String) model.get("name"))
+//                        .collect(Collectors.toList());
+//
+//                log.debug("查询到 {} 个可用模型: {}", modelNames.size(), modelNames);
+//                return modelNames;
+//            } else {
+//                log.warn("Ollama API 响应格式异常，返回空模型列表");
+//                return List.of();
+//            }
+//        } catch (Exception e) {
+//            log.error("查询可用模型列表失败: {}", e.getMessage(), e);
+//            throw SystemException.aiServiceError("查询可用模型列表失败: " + e.getMessage(), e);
+//        }
+    }
 
     @Override
     public ChatResponse generate(String model, String message) {
@@ -115,4 +147,5 @@ public class OllamaServiceImpl implements IAiService {
                 OllamaOptions.create().withModel(model)
         ));
     }
+
 }
