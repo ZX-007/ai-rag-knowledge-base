@@ -28,11 +28,6 @@ public class BaseException extends RuntimeException {
     private final String message;
 
     /**
-     * 详细错误信息（可选）
-     */
-    private final String details;
-
-    /**
      * 构造函数
      *
      * @param code    错误码
@@ -42,7 +37,6 @@ public class BaseException extends RuntimeException {
         super(message);
         this.code = code;
         this.message = message;
-        this.details = null;
     }
 
     /**
@@ -56,36 +50,6 @@ public class BaseException extends RuntimeException {
         super(message, cause);
         this.code = code;
         this.message = message;
-        this.details = null;
-    }
-
-    /**
-     * 构造函数
-     *
-     * @param code    错误码
-     * @param message 错误消息
-     * @param details 详细错误信息
-     */
-    public BaseException(String code, String message, String details) {
-        super(message);
-        this.code = code;
-        this.message = message;
-        this.details = details;
-    }
-
-    /**
-     * 构造函数
-     *
-     * @param code    错误码
-     * @param message 错误消息
-     * @param details 详细错误信息
-     * @param cause   原因异常
-     */
-    public BaseException(String code, String message, String details, Throwable cause) {
-        super(message, cause);
-        this.code = code;
-        this.message = message;
-        this.details = details;
     }
 
     /**
@@ -97,7 +61,6 @@ public class BaseException extends RuntimeException {
         super(responseCode.getMessage());
         this.code = responseCode.getCode();
         this.message = responseCode.getMessage();
-        this.details = null;
     }
 
     /**
@@ -110,34 +73,6 @@ public class BaseException extends RuntimeException {
         super(responseCode.getMessage(), cause);
         this.code = responseCode.getCode();
         this.message = responseCode.getMessage();
-        this.details = null;
-    }
-
-    /**
-     * 使用ResponseCode创建异常
-     *
-     * @param responseCode 响应码枚举
-     * @param details      详细错误信息
-     */
-    public BaseException(ResponseCode responseCode, String details) {
-        super(responseCode.getMessage());
-        this.code = responseCode.getCode();
-        this.message = responseCode.getMessage();
-        this.details = details;
-    }
-
-    /**
-     * 使用ResponseCode创建异常
-     *
-     * @param responseCode 响应码枚举
-     * @param details      详细错误信息
-     * @param cause        原因异常
-     */
-    public BaseException(ResponseCode responseCode, String details, Throwable cause) {
-        super(responseCode.getMessage(), cause);
-        this.code = responseCode.getCode();
-        this.message = responseCode.getMessage();
-        this.details = details;
     }
 
     @Override
@@ -145,7 +80,6 @@ public class BaseException extends RuntimeException {
         return "BaseException{" +
                 "code='" + code + '\'' +
                 ", message='" + message + '\'' +
-                ", details='" + details + '\'' +
                 '}';
     }
 }

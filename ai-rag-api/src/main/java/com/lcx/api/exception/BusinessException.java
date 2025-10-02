@@ -37,29 +37,6 @@ public class BusinessException extends BaseException {
     }
 
     /**
-     * 构造函数
-     *
-     * @param code    错误码
-     * @param message 错误消息
-     * @param details 详细错误信息
-     */
-    public BusinessException(String code, String message, String details) {
-        super(code, message, details);
-    }
-
-    /**
-     * 构造函数
-     *
-     * @param code    错误码
-     * @param message 错误消息
-     * @param details 详细错误信息
-     * @param cause   原因异常
-     */
-    public BusinessException(String code, String message, String details, Throwable cause) {
-        super(code, message, details, cause);
-    }
-
-    /**
      * 使用ResponseCode创建业务异常
      *
      * @param responseCode 响应码枚举
@@ -78,24 +55,4 @@ public class BusinessException extends BaseException {
         super(responseCode, cause);
     }
 
-    /**
-     * 使用ResponseCode创建业务异常
-     *
-     * @param responseCode 响应码枚举
-     * @param details      详细错误信息
-     */
-    public BusinessException(ResponseCode responseCode, String details) {
-        super(responseCode, details);
-    }
-
-    /**
-     * 使用ResponseCode创建业务异常
-     *
-     * @param responseCode 响应码枚举
-     * @param details      详细错误信息
-     * @param cause        原因异常
-     */
-    public BusinessException(ResponseCode responseCode, String details, Throwable cause) {
-        super(responseCode, details, cause);
-    }
 }

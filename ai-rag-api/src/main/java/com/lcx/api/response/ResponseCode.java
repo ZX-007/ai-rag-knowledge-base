@@ -93,7 +93,52 @@ public enum ResponseCode {
     /**
      * 向量数据库错误
      */
-    VECTOR_DB_ERROR("5007", "向量数据库错误");
+    VECTOR_DB_ERROR("5007", "向量数据库错误"),
+
+    /**
+     * 网络连接错误
+     */
+    NETWORK_ERROR("5008", "网络连接错误"),
+
+    /**
+     * 文件解析错误
+     */
+    FILE_PARSE_ERROR("5009", "文件解析错误"),
+
+    /**
+     * 模型加载错误
+     */
+    MODEL_LOAD_ERROR("5010", "模型加载错误"),
+
+    /**
+     * 配置错误
+     */
+    CONFIG_ERROR("5011", "配置错误"),
+
+    /**
+     * 资源不足错误
+     */
+    RESOURCE_EXHAUSTED("5012", "系统资源不足"),
+
+    /**
+     * 外部服务调用错误
+     */
+    EXTERNAL_SERVICE_ERROR("5013", "外部服务调用错误"),
+
+    /**
+     * 数据格式错误
+     */
+    DATA_FORMAT_ERROR("5014", "数据格式错误"),
+
+    /**
+     * 权限验证错误
+     */
+    PERMISSION_ERROR("5015", "权限验证错误"),
+
+    /**
+     * 并发访问错误
+     */
+    CONCURRENT_ACCESS_ERROR("5016", "并发访问错误");
 
     /**
      * 状态码
