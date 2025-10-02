@@ -95,8 +95,11 @@ public class OllamaServiceImpl implements IAiService {
                     model, response.getResult().getOutput().getContent().length());
             return response;
         } catch (Exception e) {
-            log.error("AI 回复生成失败，模型: {}, 错误: {}", model, e.getMessage(), e);
-            throw SystemException.aiServiceError("AI 回复生成失败: " + e.getMessage(), e);
+            // 记录AI服务调用失败的业务上下文，包含更多调试信息
+            log.error("AI 回复生成失败: 模型={}, 消息长度={}, 操作=同步生成, 错误详情={}",
+                    model, message.length(), e.getMessage(), e);
+            // 重新抛出时添加有意义的业务上下文
+            throw SystemException.aiServiceError("同步生成回复", model, e);
         }
     }
 
@@ -118,8 +121,11 @@ public class OllamaServiceImpl implements IAiService {
                             model, error.getMessage(), error))
                     .doOnComplete(() -> log.debug("AI 回复流生成完成，模型: {}", model));
         } catch (Exception e) {
-            log.error("AI 回复流创建失败，模型: {}, 错误: {}", model, e.getMessage(), e);
-            throw SystemException.aiServiceError("AI 回复流创建失败: " + e.getMessage(), e);
+            // 记录AI服务流式调用失败的业务上下文，包含更多调试信息
+            log.error("AI 回复流创建失败: 模型={}, 消息长度={}, 操作=流式生成, 错误详情={}",
+                    model, message.length(), e.getMessage(), e);
+            // 重新抛出时添加有意义的业务上下文
+            throw SystemException.aiServiceError("创建流式生成", model, e);
         }
     }
 
@@ -145,7 +151,7 @@ public class OllamaServiceImpl implements IAiService {
         Message ragMessage = new SystemPromptTemplate(SYSTEM_PROMPT).createMessage(Map.of("documents", documentCollectors));
 
         return chatClient.stream(new Prompt(
-                List.of(new UserMessage(message),ragMessage),
+                List.of(new UserMessage(message), ragMessage),
                 OllamaOptions.create().withModel(model)
         ));
     }

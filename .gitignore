@@ -1,9 +1,11 @@
 HELP.md
 target/
-.mvn/wrapper/maven-wrapper.jar
+.trae/
+git-cloned-repo/
 !**/src/main/**/target/
 !**/src/test/**/target/
 *.log
+.mvn/wrapper/maven-wrapper.jar
 
 ### STS ###
 .apt_generated
