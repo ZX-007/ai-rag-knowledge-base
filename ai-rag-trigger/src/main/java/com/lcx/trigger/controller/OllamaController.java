@@ -92,7 +92,9 @@ public class OllamaController {
      * @throws com.lcx.api.exception.SystemException 当 AI 服务调用失败时抛出
      * @see ChatRequest 请求参数对象
      * @see ChatResponse AI 回复对象
+     * @deprecated 此接口已废弃，请使用 {@link #generateStream(ChatRequest)} 流式接口替代
      */
+    @Deprecated(since = "1.1", forRemoval = true)
     @RequestMapping(value = "/generate", method = RequestMethod.POST)
     public ChatResponse generate(@Valid @RequestBody ChatRequest request) {
         log.info("收到 AI 回复生成请求，模型: {}, 消息长度: {}", request.getModel(), request.getMessage().length());

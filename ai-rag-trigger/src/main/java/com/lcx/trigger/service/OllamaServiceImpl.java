@@ -51,6 +51,7 @@ public class OllamaServiceImpl implements IAiService {
 
     @Override
     public List<String> queryAvailableModels() {
+        // todo 写死对话模型
         return List.of("deepseek-r1:1.5b");
 //        log.debug("开始查询可用的 AI 模型列表");
 //
@@ -80,6 +81,7 @@ public class OllamaServiceImpl implements IAiService {
     }
 
     @Override
+    @Deprecated(since = "1.1", forRemoval = true)
     public ChatResponse generate(String model, String message) {
         log.debug("开始生成 AI 回复，模型: {}, 消息长度: {}", model, message.length());
 

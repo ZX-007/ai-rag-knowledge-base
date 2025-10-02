@@ -50,7 +50,9 @@ public interface IAiService {
      * @return AI 生成的完整回复，包含回复内容、元数据等信息
      * @throws IllegalArgumentException 当模型名称或消息为空时抛出
      * @throws RuntimeException 当 AI 服务调用失败时抛出
+     * @deprecated 此方法已废弃，请使用 {@link #generateStream(String, String)} 流式方法替代
      */
+    @Deprecated(since = "1.1", forRemoval = true)
     ChatResponse generate(String model, String message);
 
     /**
