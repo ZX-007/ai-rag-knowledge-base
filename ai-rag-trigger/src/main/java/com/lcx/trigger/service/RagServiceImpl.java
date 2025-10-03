@@ -59,16 +59,15 @@ public class RagServiceImpl implements IRagService {
 
     private final PgVectorStore pgVectorStore;
     private final RedissonClient redissonClient;
-    private final SimpleVectorStore simpleVectorStore;
     private final TokenTextSplitter tokenTextSplitter;
 
     @Override
     public List<String> queryRagTagList() {
-        log.info("开始查询RAG标签列表");
+        log.debug("开始查询RAG标签列表");
         try {
             RList<String> elements = redissonClient.getList("ragTag");
             List<String> tagList = new ArrayList<>(elements);
-            log.info("查询RAG标签列表成功，共{}个标签", tagList.size());
+            log.debug("查询RAG标签列表成功，共{}个标签", tagList.size());
             return tagList;
         } catch (Exception e) {
             // 记录Redis操作失败的业务上下文，包含更多调试信息
@@ -228,8 +227,7 @@ public class RagServiceImpl implements IRagService {
                         documents.forEach(doc -> doc.getMetadata().put("knowledge", repoProjectName));
                         documentSplitterList.forEach(doc -> doc.getMetadata().put("knowledge", repoProjectName));
 
-                        // todo 使用ps-vector
-                        simpleVectorStore.accept(documentSplitterList);
+                        pgVectorStore.accept(documentSplitterList);
 
                         fileCounter[0]++;
                         documentCounter[0] += documentSplitterList.size();
@@ -348,7 +346,7 @@ public class RagServiceImpl implements IRagService {
                 elements.add(ragTag);
                 log.info("添加新的知识库标签：{}", ragTag);
             } else {
-                log.debug("知识库标签已存在：{}", ragTag);
+                log.info("知识库标签已存在：{}", ragTag);
             }
         } catch (Exception e) {
             // 记录Redis操作失败的业务上下文，包含更多调试信息
@@ -358,4 +356,5 @@ public class RagServiceImpl implements IRagService {
             throw SystemException.redisError("添加标签到列表", "ragTag", e);
         }
     }
+
 }

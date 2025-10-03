@@ -1,11 +1,7 @@
-HELP.md
-target/
 .trae/
 git-cloned-repo/
 !**/src/main/**/target/
 !**/src/test/**/target/
-*.log
-.mvn/wrapper/maven-wrapper.jar
 
 ### STS ###
 .apt_generated
@@ -34,3 +30,112 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### 日志文件 ###
+*.log
+*.log.*
+logs/
+log/
+
+### Java 编译产物和临时文件 ###
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.nar
+hs_err_pid*
+replay_pid*
+
+### 测试报告和覆盖率 ###
+/test-output/
+/target/site/
+/target/surefire-reports/
+/target/failsafe-reports/
+jacoco.exec
+*.exec
+
+### 环境配置文件 ###
+.env
+.env.*
+!.env.example
+application-local.yml
+application-local.yaml
+application-local.properties
+
+### 数据库文件 ###
+*.db
+*.sqlite
+*.sqlite3
+/data/
+/database/
+
+### 缓存和临时文件 ###
+.cache/
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+### 操作系统生成的文件 ###
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+### Docker 相关 ###
+.dockerignore
+docker-compose.override.yml
+
+### 其他工具和IDE ###
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+.gradletasknamecache
+
+### JetBrains 系列 IDE ###
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+### Eclipse ###
+.metadata
+bin/
+tmp/
+*.tmp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+.project
+.externalToolBuilders/
+*.launch
+.pydevproject
+.cproject
+.autotools
+.factorypath
+.buildpath
+.target
+.tern-project
+.texlipse
+.springBeans
+.recommenders/
+
+### 备份文件 ###
+*.bak
+*.backup
+*.old
+*.orig

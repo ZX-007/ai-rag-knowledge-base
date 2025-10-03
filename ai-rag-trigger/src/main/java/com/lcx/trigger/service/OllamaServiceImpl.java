@@ -116,9 +116,10 @@ public class OllamaServiceImpl implements IAiService {
             log.debug("AI 回复流创建成功，模型: {}", model);
             return responseStream
                     .doOnNext(response -> log.debug("收到 AI 回复片段，模型: {}", model))
-                    .doOnError(error -> log.error(
-                            "AI 回复流生成失败，模型: {}, 错误: {}",
-                            model, error.getMessage(), error))
+                    .doOnError(error -> {
+                        log.error("AI 回复流生成失败，模型: {}, 错误: {}", model, error.getMessage(), error);
+                        throw SystemException.aiServiceError("生成回复流", model, error);
+                    })
                     .doOnComplete(() -> log.debug("AI 回复流生成完成，模型: {}", model));
         } catch (Exception e) {
             // 记录AI服务流式调用失败的业务上下文，包含更多调试信息

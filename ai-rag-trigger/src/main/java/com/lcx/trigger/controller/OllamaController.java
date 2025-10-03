@@ -4,6 +4,7 @@ import com.lcx.api.IAiService;
 import com.lcx.api.dto.ChatRequest;
 import com.lcx.api.dto.RagChatRequest;
 import com.lcx.api.response.Response;
+import com.lcx.trigger.service.OllamaServiceImpl;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +43,7 @@ import java.util.List;
 @RequestMapping("/api/v1/ollama")
 public class OllamaController {
 
-    private final IAiService aiService;
+    private final OllamaServiceImpl aiService;
 
     /**
      * 查询可用的 AI 模型列表
@@ -62,13 +63,9 @@ public class OllamaController {
      * @return 包含可用模型名称列表的响应结果
      * @throws com.lcx.api.exception.SystemException 当查询模型列表失败时抛出
      */
-    @RequestMapping(value = "/models", method = RequestMethod.GET)
+    @GetMapping(value = "/models")
     public Response<List<String>> queryAvailableModels() {
-        log.info("收到查询可用模型列表请求");
-
-        List<String> models = aiService.queryAvailableModels();
-        log.info("查询可用模型列表成功，共{}个模型", models.size());
-        return Response.success(models);
+        return Response.success(aiService.queryAvailableModels());
     }
 
     /**
@@ -95,13 +92,9 @@ public class OllamaController {
      * @deprecated 此接口已废弃，请使用 {@link #generateStream(ChatRequest)} 流式接口替代
      */
     @Deprecated(since = "1.1", forRemoval = true)
-    @RequestMapping(value = "/generate", method = RequestMethod.POST)
+    @PostMapping(value = "/generate")
     public ChatResponse generate(@Valid @RequestBody ChatRequest request) {
-        log.info("收到 AI 回复生成请求，模型: {}, 消息长度: {}", request.getModel(), request.getMessage().length());
-        
-        ChatResponse response = aiService.generate(request.getModel(), request.getMessage());
-        log.info("AI 回复生成成功，模型: {}", request.getModel());
-        return response;
+        return aiService.generate(request.getModel(), request.getMessage());
     }
 
     /**
@@ -127,13 +120,9 @@ public class OllamaController {
      * @see Flux 响应流对象
      * @see ChatResponse AI 回复对象
      */
-    @RequestMapping(value = "/generate_stream", method = RequestMethod.POST, produces = "text/event-stream")
+    @PostMapping(value = "/generate_stream", produces = "text/event-stream")
     public Flux<ChatResponse> generateStream(@Valid @RequestBody ChatRequest request) {
-        log.info("收到 AI 流式回复生成请求，模型: {}, 消息长度: {}", request.getModel(), request.getMessage().length());
-        
-        Flux<ChatResponse> responseStream = aiService.generateStream(request.getModel(), request.getMessage());
-        log.info("AI 流式回复生成成功，模型: {}", request.getModel());
-        return responseStream;
+        return aiService.generateStream(request.getModel(), request.getMessage());
     }
 
     /**
@@ -169,12 +158,9 @@ public class OllamaController {
      * @see Flux 响应流对象
      * @see ChatResponse AI 回复对象
      */
-    @RequestMapping(value = "generate_stream_rag", method = RequestMethod.POST, produces = "text/event-stream")
+    @PostMapping(value = "generate_stream_rag", produces = "text/event-stream")
     public Flux<ChatResponse> generateStreamRag(@Valid @RequestBody RagChatRequest request) {
-        log.info("收到 AI 流式 RAG 回复生成请求，模型: {}, RAG: {}, 消息长度: {}", request.getModel(), request.getRagTag(),request.getMessage().length());
-        Flux<ChatResponse> responseStream = aiService.generateStreamRag(request.getModel(), request.getRagTag(), request.getMessage());
-        log.info("AI 流式 RAG 回复生成成功，模型: {}", request.getModel());
-        return responseStream;
+        return aiService.generateStreamRag(request.getModel(), request.getRagTag(), request.getMessage());
     }
 
 }    

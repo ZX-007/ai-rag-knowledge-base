@@ -11,7 +11,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.ollama.OllamaChatClient;
-import org.springframework.ai.ollama.api.OllamaOptions;
+import org.springframework.ai.openai.OpenAiChatClient;
 import org.springframework.ai.reader.tika.TikaDocumentReader;
 import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.PgVectorStore;
@@ -30,6 +30,8 @@ public class RagTest {
     @Resource
     private OllamaChatClient ollamaChatClient;
     @Resource
+    private OpenAiChatClient openAiChatClient;
+    @Resource
     private TokenTextSplitter tokenTextSplitter;
     @Resource
     private SimpleVectorStore simpleVectorStore;
@@ -43,8 +45,8 @@ public class RagTest {
         List<Document> documents = reader.get();
         List<Document> documentSplitterList = tokenTextSplitter.apply(documents);
 
-        documents.forEach(doc -> doc.getMetadata().put("knowledge", "知识库名称"));
-        documentSplitterList.forEach(doc -> doc.getMetadata().put("knowledge", "知识库名称"));
+        documents.forEach(doc -> doc.getMetadata().put("knowledge", "lcx"));
+        documentSplitterList.forEach(doc -> doc.getMetadata().put("knowledge", "lcx"));
 
         pgVectorStore.accept(documentSplitterList);
 
@@ -66,7 +68,7 @@ public class RagTest {
         SearchRequest request = SearchRequest
                 .query(message)
                 .withTopK(5)
-                .withFilterExpression("knowledge == '知识库名称'");
+                .withFilterExpression("knowledge == 'lcx'");
 
         List<Document> documents = pgVectorStore.similaritySearch(request);
         String documentsCollectors = documents.stream().map(Document::getContent).collect(Collectors.joining());
@@ -74,9 +76,7 @@ public class RagTest {
         Message ragMessage = new SystemPromptTemplate(SYSTEM_PROMPT).createMessage(Map.of("documents", documentsCollectors));
 
         List<Message> messages = List.of(new UserMessage(message),ragMessage);
-
-        ChatResponse chatResponse = ollamaChatClient
-                .call(new Prompt(messages, OllamaOptions.create().withModel("deepseek-r1:1.5b")));
+        ChatResponse chatResponse = openAiChatClient.call(new Prompt(messages));
 
         log.info("测试结果:{}", JSON.toJSONString(chatResponse));
     }

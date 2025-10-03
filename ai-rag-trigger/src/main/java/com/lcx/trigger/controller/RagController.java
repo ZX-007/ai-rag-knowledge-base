@@ -53,11 +53,7 @@ public class RagController {
      */
     @RequestMapping(value = "query_rag_tag_list", method = RequestMethod.GET)
     public Response<List<String>> queryRagTagList() {
-        log.info("接收到查询RAG标签列表请求");
-        
-        List<String> tagList = ragService.queryRagTagList();
-        log.info("查询RAG标签列表成功，共{}个标签", tagList.size());
-        return Response.success(tagList);
+        return Response.success(ragService.queryRagTagList());
     }
 
     /**
@@ -70,12 +66,7 @@ public class RagController {
      */
     @RequestMapping(value = "file/upload", method = RequestMethod.POST, headers = "content-type=multipart/form-data")
     public Response<String> uploadFileWithDto(@Valid FileUploadRequest request) {
-        log.info("接收到文件上传请求，标签：{}，文件数量：{}",
-                request.getRagTag(), request.getFiles() != null ? request.getFiles().size() : 0);
-
-        String result = ragService.uploadFile(request);
-        log.info("文件上传成功，标签：{}", request.getRagTag());
-        return Response.success(result);
+        return Response.success(ragService.uploadFile(request));
     }
 
     /**
@@ -111,11 +102,6 @@ public class RagController {
      */
     @RequestMapping(value = "analyze_git_repository", method = RequestMethod.POST)
     public Response<String> analyzeGitRepository(@Valid @RequestBody GitRepositoryRequest request) {
-        log.info("接收到Git仓库分析请求，仓库地址：{}", request.getRepoUrl());
-
-        String result = ragService.analyzeGitRepository(request);
-        
-        log.info("Git仓库分析成功，仓库地址：{}", request.getRepoUrl());
-        return Response.success(result);
+        return Response.success(ragService.analyzeGitRepository(request));
     }
 }

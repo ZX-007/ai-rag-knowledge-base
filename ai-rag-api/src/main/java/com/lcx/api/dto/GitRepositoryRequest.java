@@ -73,7 +73,7 @@ public class GitRepositoryRequest {
      * </ul>
      * </p>
      */
-    @Size(min = 1, max = 64, message = "userName长度必须在1-64个字符之间")
+    @Size(max = 64, message = "userName长度必须在1-64个字符之间")
     private String userName = "";
 
     /**
@@ -97,6 +97,6 @@ public class GitRepositoryRequest {
      * </ul>
      * </p>
      */
-    @Size(min = 1, max = 256, message = "token长度必须在1-256个字符之间")
+    @Size(max = 256, message = "token长度必须在1-256个字符之间")
     private String token = "";
 }
