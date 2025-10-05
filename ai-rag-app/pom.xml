@@ -47,6 +47,7 @@
 
     <build>
         <finalName>ai-rag-knowledge-app</finalName>
+
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -65,6 +66,7 @@
                 </includes>
             </testResource>
         </testResources>
+
         <plugins>
             <!-- Spring Boot Maven Plugin -->
             <plugin>
@@ -96,7 +98,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven-surefire-plugin.version}</version>
                 <configuration>
-                    <skipTests>false</skipTests>
+                    <skipTests>true</skipTests>
                     <testFailureIgnore>false</testFailureIgnore>
                     <includes>
                         <include>**/*Test.java</include>

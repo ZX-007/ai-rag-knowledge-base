@@ -31,7 +31,7 @@ public class JGitTest {
 
     @Test
     public void cloneTest() throws Exception {
-        String repoURL = "";
+        String repoURL = "https://github.com/ZX-007/rate-limiter.git";
         String username = "";
         String password = "";
 
@@ -55,7 +55,7 @@ public class JGitTest {
      */
     @Test
     public void fileTest() throws IOException {
-        Files.walkFileTree(Paths.get("D:\\workspace\\Java\\ai-rag-knowledge-base\\cloned-repo\\NoF-RPC"), new SimpleFileVisitor<>() {
+        Files.walkFileTree(Paths.get("D:\\workspace\\Java\\ai-rag-knowledge-base\\git-cloned-repo\\rate-limiter"), new SimpleFileVisitor<>() {
             @Override
             public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                 

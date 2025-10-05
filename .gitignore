@@ -1,5 +1,5 @@
 .trae/
-git-cloned-repo/
+**/git-cloned-repo/
 !**/src/main/**/target/
 !**/src/test/**/target/
 

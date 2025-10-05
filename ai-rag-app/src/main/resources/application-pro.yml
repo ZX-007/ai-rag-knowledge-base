@@ -1,0 +1,57 @@
+# Spring Boot aplication configuration
+spring:
+  # Datasource configuration
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://${DATASOURCE_HOST}:${DATASOURCE_PORT}/${DATASOURCE_DATABASE_NAME}
+    type: com.zaxxer.hikari.HikariDataSource
+    username: ${DATASOURCE_USERNAME}
+    password: ${DATASOURCE_PASSWORD}
+  # Spring AI configuration
+  ai:
+    # Ollama configuration
+    ollama:
+      base-url: ${OLLAMA_BASE_URL}
+      chat:
+        options:
+          model: ${OLLAMA_CHAT_MODEL}
+      embedding:
+        options:
+          model: ${OLLAMA_EMBEDDING_MODEL}
+    # OpenAI configuration
+    openai:
+      base-url: ${OPENAI_BASE_URL}
+      api-key: ${OPENAI_API_KEY}
+      chat:
+        options:
+          model: ${OPENAI_CHAT_MODEL}
+      embedding:
+        options:
+          model: ${OPENAI_EMBEDDING_MODEL}
+
+# Redis configuration
+redis:
+  sdk:
+    config:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+      pool-size: 10
+      min-idle-size: 5
+      idle-timeout: 30000
+      connect-timeout: 5000
+      retry-attempts: 3
+      retry-interval: 1000
+      ping-interval: 60000
+      keep-alive: true
+
+# Logging configuration
+# In the production environment, the root log level is set to warn to reduce the amount of log output.
+# If you need to troubleshoot a specific module, you can set the log level of the corresponding package to debug.
+logging:
+  level:
+    root: warn
+    org.springframework: warn
+    org.hibernate: warn
+    com.lcx: info
+  config: classpath:logback-spring.xml

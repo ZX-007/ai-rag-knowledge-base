@@ -53,9 +53,41 @@ public class RagEmbeddingConfig {
         return new TokenTextSplitter();
     }
 
+    /**
+     * 配置Ollama嵌入客户端Bean
+     *
+     * <p>OllamaEmbeddingClient用于将文本转换为向量表示，是RAG系统的核心组件之一。</p>
+     * <p>该客户端使用Ollama提供的嵌入模型来生成文本的向量表示。</p>
+     *
+     * <p>主要功能：</p>
+     * <ul>
+     *   <li>文本向量化：将文本转换为高维向量</li>
+     *   <li>语义理解：捕获文本的语义信息</li>
+     *   <li>相似性计算：支持向量相似性搜索</li>
+     *   <li>批量处理：支持批量文本向量化</li>
+     * </ul>
+     *
+     * <p>支持的嵌入模型：</p>
+     * <ul>
+     *   <li>nomic-embed-text：通用文本嵌入模型</li>
+     *   <li>all-minilm：轻量级多语言嵌入模型</li>
+     *   <li>sentence-transformers：句子级嵌入模型</li>
+     *   <li>其他Ollama支持的嵌入模型</li>
+     * </ul>
+     *
+     * <p>配置要求：</p>
+     * <ul>
+     *   <li>需要配置spring.ai.ollama.embedding.options.model指定嵌入模型</li>
+     *   <li>确保Ollama服务已安装并运行指定的嵌入模型</li>
+     * </ul>
+     *
+     * @param ollamaApi Ollama API客户端实例
+     * @param embeddingModel 嵌入模型名称，从配置文件spring.ai.ollama.embedding.options.model读取
+     * @return OllamaEmbeddingClient 嵌入客户端实例，用于文本向量化
+     */
     @Bean
     public OllamaEmbeddingClient ollamaEmbeddingClient(OllamaApi ollamaApi,
-            @Value("${spring.ai.ollama.embedding.model}") String embeddingModel) {
+            @Value("${spring.ai.ollama.embedding.options.model}") String embeddingModel) {
         OllamaEmbeddingClient ollamaEmbeddingClient = new OllamaEmbeddingClient(ollamaApi);
         ollamaEmbeddingClient.withDefaultOptions(OllamaOptions.create().withModel(embeddingModel));
         return ollamaEmbeddingClient;
@@ -77,9 +109,8 @@ public class RagEmbeddingConfig {
      *   <li>应用重启后数据丢失</li>
      *   <li>适合原型开发和测试</li>
      * </ul>
-     *
-
-     * @return SimpleVectorStore实例，提供内存向量存储功能
+     * @param embeddingClient Ollama嵌入客户端实例，用于文本向量化
+      * @return SimpleVectorStore实例，提供内存向量存储功能
      */
     @Bean
     public SimpleVectorStore vectorStore(OllamaEmbeddingClient embeddingClient) {
@@ -112,6 +143,7 @@ public class RagEmbeddingConfig {
      * </ul>
      *
      * @param jdbcTemplate Spring JDBC模板，用于数据库操作
+     * @param embeddingClient Ollama嵌入客户端实例，用于文本向量化
      * @return PgVectorStore实例，提供PostgreSQL向量存储功能
      */
     @Bean

@@ -1,0 +1,101 @@
+services:
+  ai-rag-app:
+    image: ai-rag-knowledge-base:v1.0.0
+    container_name: ai-rag-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./logs/app:/app/data/log
+    environment:
+      - SPRING_PROFILES_ACTIVE=pro
+      - DATASOURCE_HOST=pgvector
+      - DATASOURCE_PORT=5432
+      - DATASOURCE_DATABASE_NAME=ai-rag-knowledge-base
+      - DATASOURCE_USERNAME=root
+      - DATASOURCE_PASSWORD=root
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OLLAMA_CHAT_MODEL=deepseek-r1:1.5b
+      - OLLAMA_EMBEDDING_MODEL=nomic-embed-text
+      - OPENAI_BASE_URL=http://host.docker.internal:1234
+      - OPENAI_API_KEY=empty
+      - OPENAI_CHAT_MODEL=deepseek-r1-distill-qwen-1.5b
+      - OPENAI_EMBEDDING_MODEL=text-embedding-nomic-embed-text-v1.5@q5_k_m
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=root
+    depends_on:
+      - ollama
+      - redis
+      - pgvector
+    networks:
+      - network
+
+  ollama:
+    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/ollama:0.5.10
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - /opt/llm/ollama/models:/root/.ollama/models
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        /bin/ollama serve & 
+        echo "Waiting 5 seconds for Ollama server startup..."
+        sleep 5
+        /bin/ollama run deepseek-r1:1.5b
+        wait
+    networks:
+      - network
+
+  redis:
+    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/redis:6.2
+    container_name: redis
+    restart: always
+    privileged: true
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis/data:/data
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - network
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "root", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  pgvector:
+    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/pgvector:v0.5.0
+    container_name: pgvector
+    restart: always
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - PGPASSWORD=root
+      - POSTGRES_DB=ai-rag-knowledge-base
+    volumes:
+      - ./pgvector/data:/var/lib/postgresql/data
+      - ./pgvector/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: "pg_isready -U root -d ai-rag-knowledge-base"
+      interval: 5s
+      timeout: 30s
+      retries: 10
+    networks:
+      - network
+
+networks:
+  network:
+    driver: bridge

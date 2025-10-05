@@ -76,7 +76,7 @@ public class RagTest {
         Message ragMessage = new SystemPromptTemplate(SYSTEM_PROMPT).createMessage(Map.of("documents", documentsCollectors));
 
         List<Message> messages = List.of(new UserMessage(message),ragMessage);
-        ChatResponse chatResponse = openAiChatClient.call(new Prompt(messages));
+        ChatResponse chatResponse = ollamaChatClient.call(new Prompt(messages));
 
         log.info("测试结果:{}", JSON.toJSONString(chatResponse));
     }

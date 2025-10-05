@@ -17,82 +17,47 @@ services:
     image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/redis:6.2
     container_name: redis
     restart: always
-    hostname: redis
     privileged: true
     ports:
-      - "16379:6379"
+      - "6379:6379"
     volumes:
+      - ./redis/data:/data
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
     command: redis-server /usr/local/etc/redis/redis.conf
     networks:
       - network
     healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "admin321", "ping" ]
+      test: [ "CMD", "redis-cli", "-a", "root", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 3
-  redis-admin:
-    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/redis-commander:0.8.0
-    container_name: redis-admin
-    hostname: redis-commander
-    restart: always
-    ports:
-      - "8081:8081"
-    environment:
-      - REDIS_HOSTS=local:redis:6379:0:admin321
-      - HTTP_USER=admin
-      - HTTP_PASSWORD=admin321
-      - LANG=C.UTF-8
-      - LANGUAGE=C.UTF-8
-      - LC_ALL=C.UTF-8
-    networks:
-      - network
-    depends_on:
-      redis:
-        condition: service_healthy
 
   pgvector:
     image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/pgvector:v0.5.0
     container_name: pgvector
     restart: always
     environment:
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=admin321
-      - PGPASSWORD=admin321
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root
+      - PGPASSWORD=root
       - POSTGRES_DB=ai-rag-knowledge-base
     volumes:
+      - ./pgvector/data:/var/lib/postgresql/data
       - ./pgvector/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     logging:
       options:
         max-size: 10m
         max-file: "3"
     ports:
-      - '15432:5432'
+      - '5432:5432'
     healthcheck:
-      test: "pg_isready -U admin -d ai-rag-knowledge-base"
+      test: "pg_isready -U root -d ai-rag-knowledge-base"
       interval: 5s
       timeout: 30s
       retries: 10
-    networks:
-      - network
-      
-  # pg 管理工具
-  pg-admin:
-    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/pgadmin4:9.1.0
-    container_name: pg-admin
-    restart: always
-    ports:
-      - "5050:80"
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@qq.com
-      - PGADMIN_DEFAULT_PASSWORD=admin321
-    depends_on:
-      pgvector:
-        condition: service_healthy
     networks:
       - network
 
 networks:
   network:
     driver: bridge
-

@@ -38,7 +38,6 @@ import java.util.List;
 @Slf4j
 @Validated
 @RestController
-@CrossOrigin("*")
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/ollama")
 public class OllamaController {

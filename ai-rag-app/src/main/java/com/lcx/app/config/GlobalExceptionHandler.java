@@ -25,10 +25,65 @@ import java.util.stream.Collectors;
 
 /**
  * 全局异常处理器
- * <p>
- * 统一处理系统中的各种异常，提供规范的错误响应格式。
- * 支持自定义异常、参数验证异常、系统异常等多种异常类型的处理。
- * </p>
+ *
+ * <p>该类是Spring Boot应用程序的全局异常处理器，负责统一处理系统中的各种异常。</p>
+ * <p>通过@RestControllerAdvice注解，该处理器能够捕获所有Controller层抛出的异常，
+ * 并将其转换为统一的响应格式，提供良好的用户体验和系统稳定性。</p>
+ *
+ * <p>主要功能：</p>
+ * <ul>
+ *   <li>异常统一处理：捕获并处理各种类型的异常</li>
+ *   <li>响应格式标准化：将异常转换为统一的JSON响应格式</li>
+ *   <li>日志记录：详细记录异常信息，便于问题排查</li>
+ *   <li>用户友好提示：将技术异常转换为用户可理解的错误信息</li>
+ * </ul>
+ *
+ * <p>支持的异常类型：</p>
+ * <ul>
+ *   <li>自定义异常：BaseException、BusinessException、SystemException</li>
+ *   <li>参数验证异常：MethodArgumentNotValidException、BindException、ConstraintViolationException</li>
+ *   <li>HTTP异常：HttpRequestMethodNotSupportedException、NoHandlerFoundException</li>
+ *   <li>文件上传异常：MaxUploadSizeExceededException</li>
+ *   <li>系统异常：RuntimeException、Exception、IllegalArgumentException等</li>
+ * </ul>
+ *
+ * <p>异常处理策略：</p>
+ * <ul>
+ *   <li>业务异常：记录警告日志，返回业务错误码和消息</li>
+ *   <li>系统异常：记录错误日志，返回用户友好的错误提示</li>
+ *   <li>参数异常：记录警告日志，返回参数错误提示</li>
+ *   <li>未知异常：记录错误日志，返回通用错误提示</li>
+ * </ul>
+ *
+ * <p>日志记录信息：</p>
+ * <ul>
+ *   <li>异常类型和消息</li>
+ *   <li>请求URI和HTTP方法</li>
+ *   <li>客户端IP地址</li>
+ *   <li>User-Agent信息（系统异常）</li>
+ *   <li>完整的异常堆栈（错误级别）</li>
+ * </ul>
+ *
+ * <p>安全特性：</p>
+ * <ul>
+ *   <li>敏感信息过滤：避免在响应中暴露系统内部信息</li>
+ *   <li>IP地址获取：支持代理环境下的真实IP获取</li>
+ *   <li>错误消息转换：将技术错误转换为用户友好消息</li>
+ * </ul>
+ *
+ * <p>使用示例：</p>
+ * <pre>{@code
+ * // 在Controller中抛出异常，会被自动捕获处理
+ * @RestController
+ * public class UserController {
+ *     @PostMapping("/users")
+ *     public Response<User> createUser(@Valid @RequestBody UserRequest request) {
+ *         // 参数验证失败会抛出MethodArgumentNotValidException
+ *         // 业务逻辑异常会抛出BusinessException
+ *         return userService.createUser(request);
+ *     }
+ * }
+ * }</pre>
  *
  * @author lcx
  * @version 1.0
@@ -41,9 +96,27 @@ public class GlobalExceptionHandler {
     /**
      * 处理自定义基础异常
      *
-     * @param request HTTP请求
-     * @param e       异常
-     * @return 错误响应
+     * <p>处理继承自BaseException的所有自定义异常。</p>
+     * <p>BaseException是系统中所有自定义异常的基类，包含错误码和错误消息。</p>
+     *
+     * <p>处理逻辑：</p>
+     * <ul>
+     *   <li>记录警告级别日志，包含异常详细信息和请求上下文</li>
+     *   <li>提取异常中的错误码和错误消息</li>
+     *   <li>返回标准化的错误响应格式</li>
+     * </ul>
+     *
+     * <p>日志信息包括：</p>
+     * <ul>
+     *   <li>异常错误码和消息</li>
+     *   <li>请求URI和HTTP方法</li>
+     *   <li>客户端IP地址</li>
+     *   <li>完整的异常堆栈信息</li>
+     * </ul>
+     *
+     * @param request HTTP请求对象，用于获取请求上下文信息
+     * @param e BaseException异常实例，包含错误码和错误消息
+     * @return Response<Void> 标准化的错误响应，包含异常的错误码和消息
      */
     @ExceptionHandler(BaseException.class)
     public Response<Void> handleBaseException(HttpServletRequest request, BaseException e) {
@@ -56,9 +129,27 @@ public class GlobalExceptionHandler {
     /**
      * 处理业务异常
      *
-     * @param request HTTP请求
-     * @param e       异常
-     * @return 错误响应
+     * <p>专门处理BusinessException类型的业务逻辑异常。</p>
+     * <p>BusinessException通常表示业务规则违反或业务流程中的预期错误。</p>
+     *
+     * <p>典型的业务异常场景：</p>
+     * <ul>
+     *   <li>用户权限不足</li>
+     *   <li>数据状态不符合业务规则</li>
+     *   <li>业务流程约束违反</li>
+     *   <li>资源不存在或已被删除</li>
+     * </ul>
+     *
+     * <p>处理特点：</p>
+     * <ul>
+     *   <li>记录警告级别日志，不记录完整堆栈</li>
+     *   <li>直接返回业务异常中的错误码和消息</li>
+     *   <li>适合向用户展示的友好错误信息</li>
+     * </ul>
+     *
+     * @param request HTTP请求对象，用于获取请求上下文信息
+     * @param e BusinessException业务异常实例
+     * @return Response<Void> 包含业务错误码和消息的响应
      */
     @ExceptionHandler(BusinessException.class)
     public Response<Void> handleBusinessException(HttpServletRequest request, BusinessException e) {
@@ -71,9 +162,35 @@ public class GlobalExceptionHandler {
     /**
      * 处理系统异常
      *
-     * @param request HTTP请求
-     * @param e       异常
-     * @return 错误响应
+     * <p>处理SystemException类型的系统级异常。</p>
+     * <p>SystemException通常表示系统内部错误，如数据库连接失败、外部服务不可用等。</p>
+     *
+     * <p>典型的系统异常场景：</p>
+     * <ul>
+     *   <li>数据库连接异常</li>
+     *   <li>外部API调用失败</li>
+     *   <li>文件系统操作失败</li>
+     *   <li>网络连接超时</li>
+     *   <li>AI服务不可用</li>
+     * </ul>
+     *
+     * <p>处理特点：</p>
+     * <ul>
+     *   <li>记录错误级别日志，包含完整堆栈信息</li>
+     *   <li>记录User-Agent信息用于问题分析</li>
+     *   <li>将技术错误转换为用户友好的错误消息</li>
+     *   <li>避免向用户暴露系统内部技术细节</li>
+     * </ul>
+     *
+     * <p>错误消息转换：</p>
+     * <ul>
+     *   <li>根据错误码映射为用户友好的提示信息</li>
+     *   <li>提供重试建议或联系技术支持的指导</li>
+     * </ul>
+     *
+     * @param request HTTP请求对象，用于获取请求上下文信息
+     * @param e SystemException系统异常实例
+     * @return Response<Void> 包含用户友好错误消息的响应
      */
     @ExceptionHandler(SystemException.class)
     public Response<Void> handleSystemException(HttpServletRequest request, SystemException e) {
@@ -299,8 +416,33 @@ public class GlobalExceptionHandler {
     /**
      * 获取客户端真实IP地址
      *
-     * @param request HTTP请求
-     * @return 客户端IP地址
+     * <p>该方法用于获取客户端的真实IP地址，支持代理和负载均衡环境。</p>
+     * <p>在使用反向代理（如Nginx）或负载均衡器的环境中，直接获取的IP可能是代理服务器的IP，
+     * 需要通过特定的HTTP头来获取客户端的真实IP地址。</p>
+     *
+     * <p>IP获取优先级：</p>
+     * <ol>
+     *   <li>X-Forwarded-For：标准的代理转发头，可能包含多个IP（客户端IP在第一个）</li>
+     *   <li>X-Real-IP：Nginx等代理服务器设置的真实IP头</li>
+     *   <li>RemoteAddr：直接连接的IP地址（可能是代理IP）</li>
+     * </ol>
+     *
+     * <p>处理逻辑：</p>
+     * <ul>
+     *   <li>检查X-Forwarded-For头，提取第一个有效IP</li>
+     *   <li>检查X-Real-IP头，获取代理设置的真实IP</li>
+     *   <li>最后使用request.getRemoteAddr()作为兜底方案</li>
+     *   <li>过滤"unknown"等无效值</li>
+     * </ul>
+     *
+     * <p>安全考虑：</p>
+     * <ul>
+     *   <li>X-Forwarded-For可能被伪造，在安全敏感场景需要额外验证</li>
+     *   <li>建议在代理层面配置可信的IP头设置</li>
+     * </ul>
+     *
+     * @param request HTTP请求对象，包含请求头信息
+     * @return String 客户端真实IP地址，如果无法获取则返回连接IP
      */
     private String getClientIpAddress(HttpServletRequest request) {
         String xForwardedFor = request.getHeader("X-Forwarded-For");
@@ -319,9 +461,45 @@ public class GlobalExceptionHandler {
     /**
      * 根据错误代码获取用户友好的错误消息
      *
-     * @param code    错误代码
-     * @param message 原始错误消息
-     * @return 用户友好的错误消息
+     * <p>该方法将系统内部的技术错误代码转换为用户可理解的友好错误消息。</p>
+     * <p>主要目的是避免向用户暴露系统内部的技术细节，同时提供有用的错误提示和解决建议。</p>
+     *
+     * <p>错误代码分类：</p>
+     * <ul>
+     *   <li>5001-5016：系统级错误，如数据库、网络、AI服务等</li>
+     *   <li>每个错误代码对应特定的系统组件或服务</li>
+     *   <li>提供针对性的用户提示和解决建议</li>
+     * </ul>
+     *
+     * <p>消息转换策略：</p>
+     * <ul>
+     *   <li>技术术语转换：将技术错误转换为通俗易懂的描述</li>
+     *   <li>解决建议：提供用户可以采取的解决方案</li>
+     *   <li>联系支持：对于严重错误提供技术支持联系建议</li>
+     *   <li>重试提示：对于临时性错误建议用户重试</li>
+     * </ul>
+     *
+     * <p>特殊处理：</p>
+     * <ul>
+     *   <li>对于包含" - "分隔符的消息，提取业务相关部分</li>
+     *   <li>未知错误代码使用通用的友好提示</li>
+     *   <li>保持消息的一致性和专业性</li>
+     * </ul>
+     *
+     * <p>支持的错误代码：</p>
+     * <ul>
+     *   <li>5001：数据库服务异常</li>
+     *   <li>5002：文件上传异常</li>
+     *   <li>5005：AI服务异常</li>
+     *   <li>5006：缓存服务异常</li>
+     *   <li>5007：向量数据库异常</li>
+     *   <li>5008：网络连接异常</li>
+     *   <li>其他：参见方法实现</li>
+     * </ul>
+     *
+     * @param code 系统错误代码，用于识别错误类型
+     * @param message 原始错误消息，可能包含技术细节
+     * @return String 用户友好的错误消息，包含解决建议
      */
     private String getUserFriendlyMessage(String code, String message) {
         return switch (code) {

@@ -5,31 +5,44 @@ spring:
   application:
     name: ai-rag-knowledge-base
   profiles:
-    active: dev # 默认启用开发环境
+    active: local
+  # Datasource configuration
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://118.196.28.78:15432/ai-rag-knowledge-base
+    url: jdbc:postgresql://localhost:5432/ai-rag-knowledge-base
     type: com.zaxxer.hikari.HikariDataSource
-    username: admin
-    password: admin321
+    username: root
+    password: root
+  # Spring AI configuration
   ai:
+    # Ollama configuration
     ollama:
       base-url: http://localhost:11434
       chat:
-        enabled: true
         options:
           model: deepseek-r1:1.5b
       embedding:
         options:
+          model: nomic-embed-text
           num-batch: 512
-        model: nomic-embed-text
+    # OpenAI configuration
+    openai:
+      base-url: http://127.0.0.1:1234
+      api-key: empty
+      chat:
+        options:
+          model: deepseek-r1-distill-qwen-1.5b
+      embedding:
+        options:
+          model: text-embedding-nomic-embed-text-v1.5@q5_k_m
 
+# Redis configuration
 redis:
   sdk:
     config:
-      host: 118.196.28.78
-      port: 16379
-      password: admin321
+      host: localhost
+      port: 6379
+      password: root
       pool-size: 10
       min-idle-size: 5
       idle-timeout: 30000
@@ -39,7 +52,11 @@ redis:
       ping-interval: 60000
       keep-alive: true
 
+# Logging configuration
 logging:
   level:
-    root: debug
+    root: info
+    org.springframework: warn
+    org.hibernate: warn
+    com.lcx: debug
   config: classpath:logback-spring.xml

@@ -9,9 +9,6 @@
     </parent>
 
     <artifactId>ai-rag-trigger</artifactId>
-    <packaging>jar</packaging>
-    <name>ai-rag-trigger</name>
-    <description>AI RAG Trigger module containing controllers and service implementations</description>
 
     <dependencies>
         <dependency>

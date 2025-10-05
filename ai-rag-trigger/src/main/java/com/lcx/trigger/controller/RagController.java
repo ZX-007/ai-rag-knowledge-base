@@ -37,7 +37,6 @@ import java.util.List;
 @Slf4j
 @Validated
 @RestController
-@CrossOrigin("*")
 @RequestMapping("/api/v1/rag/")
 public class RagController {
 
