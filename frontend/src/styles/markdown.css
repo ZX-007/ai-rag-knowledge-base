@@ -1,0 +1,104 @@
+/*
+ * Markdown 展示样式（美观 + 合理缩进）
+ * 作用范围：.markdown-body
+ */
+
+.markdown-body {
+  color: var(--ant-colorText, #1f1f1f);
+  line-height: 1.65; /* 紧凑行距，减少上下间距 */
+  font-size: 15px;
+  word-wrap: break-word;
+}
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  color: var(--ant-colorText, #141414);
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 1.2em 0 0.6em;
+}
+
+.markdown-body h1 { font-size: 24px; }
+.markdown-body h2 { font-size: 20px; }
+.markdown-body h3 { font-size: 18px; }
+.markdown-body h4 { font-size: 16px; }
+.markdown-body h5 { font-size: 15px; }
+.markdown-body h6 { font-size: 14px; color: var(--ant-colorTextTertiary, #666); }
+
+/* 段落首行缩进（不影响列表/代码/引用内部段落） */
+.markdown-body p { 
+  margin: 0 0 8px;  /* 缩小段落底部间距 */
+  text-indent: 2em; /* 首行缩进 */
+}
+.markdown-body li p,
+.markdown-body blockquote p,
+.markdown-body pre p { text-indent: 0; }
+
+/* 列表缩进与间距 */
+.markdown-body ul,
+.markdown-body ol {
+  padding-left: 1.6em; /* 调小列表缩进，使编号与内容更靠近 */
+  margin: 0 0 8px;
+  list-style-position: inside; /* 让编号/符号与内容同一行，更紧凑 */
+}
+.markdown-body li { margin: 2px 0; }
+
+/* 引用块样式 */
+.markdown-body blockquote {
+  border-left: 4px solid var(--ant-colorBorder, #d0d7de);
+  background: var(--ant-colorBgElevated, #f6f8fa);
+  padding: 10px 12px;
+  margin: 8px 0; /* 缩小引用块与上下内容的间距 */
+  color: var(--ant-colorTextSecondary, #4a5568);
+}
+
+/* 代码块与行内代码 */
+.markdown-body pre {
+  background: var(--ant-colorBgContainer, #f6f8fa);
+  border: 1px solid var(--ant-colorBorder, #e1e4e8);
+  border-radius: 8px;
+  padding: 10px;
+  overflow: auto;
+  margin: 8px 0; /* 缩小代码块与上下内容的间距 */
+}
+.markdown-body code {
+  background: var(--ant-colorBgContainer, #f6f8fa);
+  border-radius: 4px;
+  padding: 2px 4px;
+}
+
+/* 表格样式 */
+.markdown-body table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 8px 0; /* 缩小表格与上下内容的间距 */
+}
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--ant-colorBorder, #e1e4e8);
+  padding: 8px 10px;
+}
+.markdown-body thead th {
+  background: var(--ant-colorBgElevated, #f3f4f6);
+}
+.markdown-body tbody tr:nth-child(odd) {
+  background: var(--ant-colorBgContainer, #fafafa);
+}
+
+/* 图片响应与美化 */
+.markdown-body img {
+  max-width: 100%;
+  display: block;
+  margin: 12px auto;
+  border-radius: 6px;
+}
+
+/* 链接可读性 */
+.markdown-body a {
+  color: var(--ant-colorLink, var(--ant-colorPrimary, #1677ff));
+  text-decoration: underline;
+}

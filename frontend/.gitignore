@@ -1,0 +1,33 @@
+# 前端项目忽略文件（Vite + React + TypeScript）
+
+# 依赖目录
+node_modules/
+
+# 构建产物
+dist.zip
+dist/
+.vite/
+
+# 日志文件
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# 环境变量文件（保留示例）
+.env
+.env.*
+!.env.example
+
+# 覆盖率报告
+coverage/
+
+# TypeScript 增量构建信息
+tsconfig.tsbuildinfo
+
+# 缓存与工具
+.eslintcache
+
+# 操作系统/IDE 产生的杂项文件
+.DS_Store
+Thumbs.db

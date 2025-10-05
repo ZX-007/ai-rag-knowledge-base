@@ -1,0 +1,233 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--ant-colorBgLayout, #f5f5f5);
+}
+
+/* 深色主题覆盖（通过在 body 上设置 data-theme="dark" 启用） */
+body[data-theme='dark'] {
+  background-color: var(--ant-colorBgLayout, #121212);
+  color: var(--ant-colorText, #e6e6e6);
+  /* 主题变量：供组件与内联样式使用 */
+  --panel-bg: var(--ant-colorBgElevated);
+  --panel-text: var(--ant-colorTextSecondary);
+  --panel-border: var(--ant-colorBorder);
+  /* 对话区主题变量（暗色，跟随 AntD token） */
+  --chat-user-bg: var(--ant-colorPrimaryBg);
+  --chat-user-text: var(--ant-colorText);
+  --chat-assistant-bg: var(--ant-colorBgContainer);
+  --chat-assistant-text: var(--ant-colorText);
+  --chat-avatar-user: var(--ant-colorPrimary);
+  --chat-avatar-assistant: var(--ant-colorTextSecondary);
+  --chat-accent: var(--ant-colorPrimary);
+}
+
+body[data-theme='dark'] .app-container {
+  background: var(--ant-colorBgLayout, #121212);
+}
+
+body[data-theme='dark'] .chat-container {
+  background: var(--ant-colorBgContainer, #1e1e1e);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+}
+
+body[data-theme='dark'] .chat-header {
+  background: var(--ant-colorBgContainer, #1f1f1f);
+  color: var(--ant-colorText, #ffffff);
+}
+
+body[data-theme='dark'] .chat-controls {
+  background: var(--ant-colorBgElevated, #141414);
+  border-bottom: 1px solid var(--ant-colorBorder, #2f2f2f);
+}
+
+body[data-theme='dark'] .chat-messages {
+  background: var(--ant-colorBgContainer, #1e1e1e);
+}
+
+body[data-theme='dark'] .chat-input-area {
+  background: var(--ant-colorBgElevated, #141414);
+  border-top: 1px solid var(--ant-colorBorder, #2f2f2f);
+}
+
+body[data-theme='dark'] .message-bubble.assistant {
+  background: var(--chat-assistant-bg);
+  color: var(--chat-assistant-text);
+  border: 1px solid var(--panel-border);
+}
+
+body[data-theme='dark'] .streaming-cursor {
+  background: var(--chat-accent);
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+}
+
+/* 默认（浅色）主题变量 */
+:root {
+  --panel-bg: var(--ant-colorBgElevated, #f8f9fa);
+  --panel-text: var(--ant-colorTextSecondary, #666);
+  --panel-border: var(--ant-colorBorder, #e8e8e8);
+  /* 对话区主题变量（浅色，跟随 AntD token） */
+  --chat-user-bg: var(--ant-colorPrimaryBg, #e8f4ff);
+  --chat-user-text: var(--ant-colorText, #0a1f44);
+  --chat-assistant-bg: var(--ant-colorBgContainer, #f6f7f9);
+  --chat-assistant-text: var(--ant-colorText, #333);
+  --chat-avatar-user: var(--ant-colorPrimary, #1677ff);
+  --chat-avatar-assistant: var(--ant-colorTextSecondary, #6c757d);
+  --chat-accent: var(--ant-colorPrimary, #1677ff);
+}
+
+.app-container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--ant-colorBgLayout, #ffffff);
+}
+
+.chat-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: var(--ant-colorBgContainer, #ffffff);
+  margin: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.chat-header {
+  background: var(--ant-colorBgContainer, #ffffff);
+  color: var(--ant-colorText, #000000);
+  padding: 16px 24px;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.chat-controls {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--ant-colorBorder, #f0f0f0);
+  background: var(--ant-colorBgElevated, #fafafa);
+}
+
+.chat-messages {
+  flex: 1;
+  padding: 16px 24px;
+  overflow-y: auto;
+  background: var(--ant-colorBgContainer, #ffffff);
+}
+
+.chat-input-area {
+  padding: 16px 24px;
+  border-top: 1px solid var(--ant-colorBorder, #f0f0f0);
+  background: var(--ant-colorBgElevated, #fafafa);
+}
+
+.message-item {
+  margin-bottom: 16px;
+}
+
+.message-user {
+  text-align: right;
+}
+
+.message-assistant {
+  text-align: left;
+}
+
+.message-bubble {
+  display: inline-block;
+  max-width: 70%;
+  padding: 12px 16px;
+  border-radius: 18px;
+  word-wrap: break-word;
+  white-space: pre-wrap;
+}
+
+.message-bubble.user {
+  background: var(--chat-user-bg);
+  color: var(--chat-user-text);
+}
+
+/* 深色主题下用户消息气泡的渐变优化，避免过亮突兀 */
+body[data-theme='dark'] .message-bubble.user {
+  background: var(--chat-user-bg);
+}
+
+.message-bubble.assistant {
+  background: var(--chat-assistant-bg);
+  color: var(--chat-assistant-text);
+  border: 1px solid var(--panel-border);
+}
+
+.streaming-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: var(--chat-accent);
+  animation: blink 1s infinite;
+  margin-left: 2px;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+
+.loading-dots {
+  display: inline-block;
+}
+
+.loading-dots::after {
+  content: '';
+  animation: dots 1.5s infinite;
+}
+
+@keyframes dots {
+  0%, 20% { content: ''; }
+  40% { content: '.'; }
+  60% { content: '..'; }
+  80%, 100% { content: '...'; }
+}
+
+/* ================= Markdown 暗色主题适配 ================= */
+/* GitHub 样式在暗色主题下的阅读性增强 */
+body[data-theme='dark'] .markdown-body {
+  color: #e6e6e6;
+}
+body[data-theme='dark'] .markdown-body h1,
+body[data-theme='dark'] .markdown-body h2,
+body[data-theme='dark'] .markdown-body h3,
+body[data-theme='dark'] .markdown-body h4,
+body[data-theme='dark'] .markdown-body h5,
+body[data-theme='dark'] .markdown-body h6 {
+  color: #ffffff;
+}
+body[data-theme='dark'] .markdown-body blockquote {
+  border-left-color: #334155;
+  background: #0f172a;
+  color: #cbd5e1;
+}
+body[data-theme='dark'] .markdown-body pre {
+  background: #0d1117;
+  border-color: #1f2937;
+}
+body[data-theme='dark'] .markdown-body code {
+  background: #0d1117;
+}
+body[data-theme='dark'] .markdown-body .hljs {
+  background: #0d1117;
+  color: #c9d1d9;
+}

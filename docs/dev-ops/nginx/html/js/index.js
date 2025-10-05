@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const loadRagOptions = () => {
         const ragSelect = document.getElementById('ragSelect');
 
-        fetch('http://localhost:8090/api/v1/rag/query_rag_tag_list')
+        fetch('http://localhost:8080/api/v1/rag/query_rag_tag_list')
             .then(response => response.json())
             .then(data => {
                 if (data.code === '0000' && data.data) {
@@ -236,9 +236,9 @@ function appendMessage(content, isAssistant = false, saveToStorage = true) {
     let url;
 
     if (ragTag) {
-        url = `http://localhost:8090/api/v1/${aiModelValue}/generate_stream_rag?message=${encodeURIComponent(message)}&ragTag=${encodeURIComponent(ragTag)}&model=${encodeURIComponent(aiModelModel)}`;
+        url = `http://localhost:8080/api/v1/${aiModelValue}/generate_stream_rag?message=${encodeURIComponent(message)}&ragTag=${encodeURIComponent(ragTag)}&model=${encodeURIComponent(aiModelModel)}`;
     } else {
-        url = `http://localhost:8090/api/v1/${aiModelValue}/generate_stream?message=${encodeURIComponent(message)}&model=${encodeURIComponent(aiModelModel)}`;
+        url = `http://localhost:8080/api/v1/${aiModelValue}/generate_stream?message=${encodeURIComponent(message)}&model=${encodeURIComponent(aiModelModel)}`;
     }
 
     currentEventSource = new EventSource(url);
