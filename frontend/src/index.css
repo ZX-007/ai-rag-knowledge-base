@@ -35,38 +35,60 @@ body[data-theme='dark'] .app-container {
   background: var(--ant-colorBgLayout, #121212);
 }
 
-body[data-theme='dark'] .chat-container {
+body[data-theme='dark'] .fixed-header {
   background: var(--ant-colorBgContainer, #1e1e1e);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 body[data-theme='dark'] .chat-header {
-  background: var(--ant-colorBgContainer, #1f1f1f);
+  background: var(--ant-colorBgContainer, #1e1e1e);
   color: var(--ant-colorText, #ffffff);
+  border-bottom-color: var(--ant-colorBorder, #333);
 }
 
 body[data-theme='dark'] .chat-controls {
   background: var(--ant-colorBgElevated, #141414);
-  border-bottom: 1px solid var(--ant-colorBorder, #2f2f2f);
 }
 
-body[data-theme='dark'] .chat-messages {
-  background: var(--ant-colorBgContainer, #1e1e1e);
-}
-
-body[data-theme='dark'] .chat-input-area {
+body[data-theme='dark'] .fixed-input {
   background: var(--ant-colorBgElevated, #141414);
-  border-top: 1px solid var(--ant-colorBorder, #2f2f2f);
-}
-
-body[data-theme='dark'] .message-bubble.assistant {
-  background: var(--chat-assistant-bg);
-  color: var(--chat-assistant-text);
-  border: 1px solid var(--panel-border);
+  border-top-color: var(--ant-colorBorder, #333);
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
 }
 
 body[data-theme='dark'] .streaming-cursor {
   background: var(--chat-accent);
+}
+
+/* 深色主题下的 AI 消息优化 */
+body[data-theme='dark'] .ai-text-content {
+  color: var(--ant-colorText);
+}
+
+body[data-theme='dark'] .thinking-collapse {
+  background: var(--ant-colorBgContainer) !important;
+  border-color: var(--ant-colorBorder);
+}
+
+body[data-theme='dark'] .thinking-label {
+  color: var(--ant-colorText) !important;
+}
+
+body[data-theme='dark'] .thinking-content {
+  color: var(--ant-colorText);
+}
+
+body[data-theme='dark'] .thinking-timestamp {
+  color: var(--ant-colorTextTertiary);
+}
+
+/* 深色主题下的欢迎页面优化 */
+body[data-theme='dark'] .empty-state-title {
+  color: var(--ant-colorText);
+}
+
+body[data-theme='dark'] .empty-state-subtitle {
+  color: var(--ant-colorText) !important;
 }
 
 #root {
@@ -94,17 +116,18 @@ body[data-theme='dark'] .streaming-cursor {
   display: flex;
   flex-direction: column;
   background: var(--ant-colorBgLayout, #ffffff);
+  overflow: hidden;
 }
 
-.chat-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
+/* 固定顶部栏 */
+.fixed-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
   background: var(--ant-colorBgContainer, #ffffff);
-  margin: 20px;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
 .chat-header {
@@ -114,62 +137,183 @@ body[data-theme='dark'] .streaming-cursor {
   text-align: center;
   font-size: 18px;
   font-weight: 600;
+  border-bottom: 1px solid var(--ant-colorBorder, #f0f0f0);
 }
 
 .chat-controls {
   padding: 16px 24px;
-  border-bottom: 1px solid var(--ant-colorBorder, #f0f0f0);
   background: var(--ant-colorBgElevated, #fafafa);
+  display: flex;
+  justify-content: center;
 }
 
-.chat-messages {
+/* 对话内容区域 */
+.chat-content-wrapper {
   flex: 1;
-  padding: 16px 24px;
+  display: flex;
+  flex-direction: column;
+  padding-top: 140px; /* 为固定顶部栏留出空间 */
+  overflow: hidden;
+}
+
+.chat-content-container {
+  flex: 1;
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
   overflow-y: auto;
-  background: var(--ant-colorBgContainer, #ffffff);
 }
 
-.chat-input-area {
-  padding: 16px 24px;
-  border-top: 1px solid var(--ant-colorBorder, #f0f0f0);
-  background: var(--ant-colorBgElevated, #fafafa);
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: var(--ant-colorText);
 }
 
-.message-item {
+.empty-state-content {
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 48px;
   margin-bottom: 16px;
 }
 
+.empty-state-title {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ant-colorText);
+  margin-bottom: 8px;
+}
+
+.empty-state-subtitle {
+  font-size: 14px;
+  color: var(--ant-colorTextTertiary);
+}
+
+.chat-messages {
+  padding: 20px 0;
+}
+
+/* 固定底部输入框 */
+.fixed-input {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--ant-colorBgElevated, #fafafa);
+  border-top: 1px solid var(--ant-colorBorder, #f0f0f0);
+  padding: 16px 0;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.input-container {
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.message-item {
+  margin-bottom: 32px;
+  animation: messageSlideIn 0.3s ease-out;
+}
+
+@keyframes messageSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .message-user {
-  text-align: right;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .message-assistant {
-  text-align: left;
+  display: flex;
+  justify-content: flex-start;
 }
 
-.message-bubble {
-  display: inline-block;
-  max-width: 70%;
+/* AI 消息样式 - 纯文本，无背景 */
+.ai-message-content {
+  width: 100%;
+  color: var(--ant-colorText);
+}
+
+.ai-text-content {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--ant-colorText);
+}
+
+/* 思考过程区域 */
+.thinking-section {
+  margin-bottom: 16px;
+}
+
+.thinking-timestamp {
+  font-size: 12px;
+  color: var(--ant-colorTextTertiary);
+  margin-bottom: 8px;
+}
+
+.thinking-collapse {
+  background: var(--ant-colorBgContainer) !important;
+  border-radius: 8px;
+  border: 1px solid var(--ant-colorBorder);
+}
+
+.thinking-label {
+  color: var(--ant-colorTextSecondary) !important;
+  font-size: 13px;
+}
+
+.thinking-label .anticon {
+  color: var(--ant-colorTextSecondary) !important;
+}
+
+.thinking-content {
+  padding: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--ant-colorText);
+}
+
+/* 用户消息样式 - 灰色框，靠右，纯文本 */
+.user-message-wrapper {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.user-message-box {
+  background: rgba(128, 128, 128, 0.15);
+  border: 1px solid rgba(128, 128, 128, 0.25);
+  border-radius: 12px;
   padding: 12px 16px;
-  border-radius: 18px;
-  word-wrap: break-word;
-  white-space: pre-wrap;
+  max-width: 70%;
+  min-width: fit-content;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ant-colorText);
+  display: inline-block;
 }
 
-.message-bubble.user {
-  background: var(--chat-user-bg);
-  color: var(--chat-user-text);
-}
-
-/* 深色主题下用户消息气泡的渐变优化，避免过亮突兀 */
-body[data-theme='dark'] .message-bubble.user {
-  background: var(--chat-user-bg);
-}
-
-.message-bubble.assistant {
-  background: var(--chat-assistant-bg);
-  color: var(--chat-assistant-text);
-  border: 1px solid var(--panel-border);
+/* 深色主题下的用户消息框 */
+body[data-theme='dark'] .user-message-box {
+  background: rgba(128, 128, 128, 0.2);
+  border-color: rgba(128, 128, 128, 0.3);
 }
 
 .streaming-cursor {
@@ -203,18 +347,7 @@ body[data-theme='dark'] .message-bubble.user {
 }
 
 /* ================= Markdown 暗色主题适配 ================= */
-/* GitHub 样式在暗色主题下的阅读性增强 */
-body[data-theme='dark'] .markdown-body {
-  color: #e6e6e6;
-}
-body[data-theme='dark'] .markdown-body h1,
-body[data-theme='dark'] .markdown-body h2,
-body[data-theme='dark'] .markdown-body h3,
-body[data-theme='dark'] .markdown-body h4,
-body[data-theme='dark'] .markdown-body h5,
-body[data-theme='dark'] .markdown-body h6 {
-  color: #ffffff;
-}
+/* 深色主题下的 Markdown 样式优化（颜色已通过继承处理） */
 body[data-theme='dark'] .markdown-body blockquote {
   border-left-color: #334155;
   background: #0f172a;

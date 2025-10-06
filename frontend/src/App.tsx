@@ -12,7 +12,7 @@ import GitRepoAnalyze from './components/GitRepoAnalyze';
 import ThemeToggle from './components/ThemeToggle';
 import type { ThemeMode } from './components/ThemeToggle';
 
-const { Header, Content } = Layout;
+const { Header } = Layout;
 
 /**
  * 主应用组件
@@ -226,9 +226,10 @@ const App: React.FC = () => {
   }, [loadRagTags, messageApi]);
 
   return (
-    <ConfigProvider theme={{ algorithm: theme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm }}>
+    <ConfigProvider theme={{ cssVar: true, hashed: false, algorithm: theme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm }}>
       <div className="app-container">
-        <div className="chat-container">
+        {/* 固定顶部栏 */}
+        <div className="fixed-header">
           <Header className="chat-header">
             🤖 AI RAG 知识库对话系统
           </Header>
@@ -252,21 +253,17 @@ const App: React.FC = () => {
               <ThemeToggle mode={theme} onToggle={setTheme} />
             </Space>
           </div>
+        </div>
 
-          <Content style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+        {/* 对话内容区域 */}
+        <div className="chat-content-wrapper">
+          <div className="chat-content-container">
             {state.messages.length === 0 ? (
-              <div style={{ 
-                flex: 1, 
-                display: 'flex', 
-                alignItems: 'center', 
-                justifyContent: 'center',
-                color: theme === 'dark' ? '#bfbfbf' : '#999',
-                fontSize: '16px'
-              }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>💬</div>
-                  <div>欢迎使用AI RAG知识库对话系统</div>
-                  <div style={{ fontSize: '14px', marginTop: '8px' }}>
+              <div className="empty-state">
+                <div className="empty-state-content">
+                  <div className="empty-state-icon">💬</div>
+                  <div className="empty-state-title">欢迎使用AI RAG知识库对话系统</div>
+                  <div className="empty-state-subtitle">
                     {state.selectedRagTag ? 
                       `当前使用知识库: ${state.selectedRagTag}` : 
                       '请输入您的问题开始对话'
@@ -281,19 +278,24 @@ const App: React.FC = () => {
                 currentStreamingMessageId={state.currentStreamingMessageId}
               />
             )}
+          </div>
 
-            <MessageInput
-              onSendMessage={handleSendMessage}
-              disabled={state.isStreaming || !state.selectedModel}
-              placeholder={
-                !state.selectedModel 
-                  ? "请先选择AI模型..." 
-                  : state.selectedRagTag 
-                    ? `向知识库 "${state.selectedRagTag}" 提问...`
-                    : "请输入您的问题..."
-              }
-            />
-          </Content>
+          {/* 固定底部输入框 */}
+          <div className="fixed-input">
+            <div className="input-container">
+              <MessageInput
+                onSendMessage={handleSendMessage}
+                disabled={state.isStreaming || !state.selectedModel}
+                placeholder={
+                  !state.selectedModel 
+                    ? "请先选择AI模型..." 
+                    : state.selectedRagTag 
+                      ? `向知识库 "${state.selectedRagTag}" 提问...`
+                      : "请输入您的问题..."
+                }
+              />
+            </div>
+          </div>
         </div>
       </div>
     </ConfigProvider>

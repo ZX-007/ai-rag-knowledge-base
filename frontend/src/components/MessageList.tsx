@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { Avatar, Collapse } from 'antd';
-import { UserOutlined, RobotOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { Collapse, Space, Typography } from 'antd';
+import { ThunderboltOutlined } from '@ant-design/icons';
 import { Message } from '../types';
 import MarkdownText from './MarkdownText';
 import ThinkingTimer from './ThinkingTimer';
+
+const { Text } = Typography;
 
 interface MessageListProps {
   messages: Message[];
@@ -38,90 +40,75 @@ const MessageList: React.FC<MessageListProps> = ({
           key={message.id} 
           className={`message-item ${message.type === 'user' ? 'message-user' : 'message-assistant'}`}
         >
-          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', 
-                      flexDirection: message.type === 'user' ? 'row-reverse' : 'row' }}>
-            <Avatar 
-              icon={message.type === 'user' ? <UserOutlined /> : <RobotOutlined />}
-              style={{ 
-                backgroundColor: message.type === 'user' ? 'var(--chat-avatar-user)' : 'var(--chat-avatar-assistant)',
-                flexShrink: 0
-              }}
-            />
-            <div 
-              className={`message-bubble ${message.type}`}
-              style={{
-                textAlign: 'left',
-                maxWidth: '70%'
-              }}
-            >
-              {message.type === 'assistant' ? (
-                <div>
-                  {/* 思考过程展示 */}
-                  {message.thinkingContent && (
-                    <Collapse 
-                      size="small" 
-                      style={{ marginBottom: '12px' }}
-                      expandIconPosition="start"
-                      ghost
-                      items={[
-                        {
-                          key: '1',
-                          label: (
-                            <span style={{ color: 'var(--panel-text)', fontSize: '13px', display: 'inline-flex', alignItems: 'center' }}>
-                              <ThunderboltOutlined style={{ marginRight: 6 }} />
-                              {message.id === currentStreamingMessageId && isStreaming ? '深度思考中' : '已深度思考'}（
+          {message.type === 'assistant' ? (
+            // AI 消息 - 纯文本，无背景
+            <div className="ai-message-content">
+              {/* 思考过程展示 */}
+              {message.thinkingContent && (
+                <div className="thinking-section">
+                  {/* 时间戳在思考顶部 */}
+                  <div className="thinking-timestamp">
+                    {new Date(message.timestamp).toLocaleTimeString('zh-CN', { 
+                      hour: '2-digit', 
+                      minute: '2-digit',
+                      second: '2-digit'
+                    })}
+                  </div>
+                  
+                  <Collapse 
+                    size="small" 
+                    expandIconPosition="start"
+                    ghost
+                    bordered={false}
+                    className="thinking-collapse"
+                    items={[
+                      {
+                        key: '1',
+                        label: (
+                          <Space size={6} className="thinking-label">
+                            <ThunderboltOutlined />
+                            <Text>
+                              已深度思考（用时
                               <ThinkingTimer 
                                 startAt={message.thinkingStartAt}
                                 endAt={message.thinkingEndAt}
                                 running={message.id === currentStreamingMessageId && isStreaming}
-                                label={message.id === currentStreamingMessageId && isStreaming ? '思考时间' : '用时'}
+                                label=""
                               />
-                              ）
-                            </span>
-                          ),
-                          children: (
-                            <div style={{ 
-                              background: 'var(--panel-bg)', 
-                              padding: '12px', 
-                              borderRadius: '6px',
-                              fontSize: '13px',
-                              color: 'var(--panel-text)',
-                              lineHeight: '1.5',
-                              whiteSpace: 'pre-wrap'
-                            }}>
-                              <MarkdownText 
-                                content={message.thinkingContent}
-                                isStreaming={message.id === currentStreamingMessageId && isStreaming}
-                              />
-                            </div>
-                          )
-                        }
-                      ]}
-                    />
-                  )}
-                  
-                  {/* 正文内容 */}
-                  <div>
-                    <MarkdownText 
-                      content={message.content}
-                      isStreaming={message.id === currentStreamingMessageId && isStreaming}
-                    />
-                  </div>
+                              秒）
+                            </Text>
+                          </Space>
+                        ),
+                        children: (
+                          <div className="thinking-content">
+                            <MarkdownText 
+                              content={message.thinkingContent}
+                              isStreaming={message.id === currentStreamingMessageId && isStreaming}
+                            />
+                          </div>
+                        )
+                      }
+                    ]}
+                  />
                 </div>
-              ) : (
-                // 用户消息
-                <MarkdownText content={message.content} />
               )}
+              
+              {/* 正文内容 */}
+              <div className="ai-text-content">
+                <MarkdownText 
+                  content={message.content || (message.id === currentStreamingMessageId && isStreaming ? '正在思考...' : '')}
+                  isStreaming={message.id === currentStreamingMessageId && isStreaming && !message.thinkingContent}
+                />
+              </div>
             </div>
-          </div>
-          <div style={{ 
-            fontSize: '12px', 
-            color: 'var(--panel-text)', 
-            marginTop: '4px',
-            textAlign: message.type === 'user' ? 'right' : 'left'
-          }}>
-            {new Date(message.timestamp).toLocaleTimeString()}
-          </div>
+          ) : (
+            // 用户消息 - 灰色框，靠右，纯文本显示
+            <div className="user-message-wrapper">
+              <div className="user-message-box">
+                {message.content}
+              </div>
+            </div>
+          )}
         </div>
       ))}
       <div ref={messagesEndRef} />

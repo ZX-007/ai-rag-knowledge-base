@@ -1,4 +1,5 @@
 import { ApiResponse, ChatRequest, RagChatRequest, GitRepositoryRequest } from '../types';
+import { createStreamParser, parseSSELine } from '../utils/streamParser';
 
 // 可通过环境变量配置 API 前缀与请求超时时间
 const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_PREFIX) ? import.meta.env.VITE_API_PREFIX : '/api/v1';
@@ -90,7 +91,7 @@ export class ApiService {
   }
 
   /**
-   * 流式聊天
+   * 流式聊天（使用统一解析器）
    */
   static async *streamChat(request: ChatRequest): AsyncGenerator<{content: string, thinking?: string}, void, unknown> {
     const response = await fetch(`${API_BASE_URL}/ollama/generate_stream`, {
@@ -112,10 +113,8 @@ export class ApiService {
     }
 
     const decoder = new TextDecoder();
+    const parser = createStreamParser();
     let buffer = '';
-
-    // 流式解析状态机：跟踪是否处于<think>思考内容段
-    let inThinking = false;
 
     try {
       while (true) {
@@ -127,74 +126,40 @@ export class ApiService {
         buffer = lines.pop() || '';
 
         for (const line of lines) {
-          if (line.trim() === '') continue;
+          const { isData, content: sseContent, isDone } = parseSSELine(line);
           
-          if (line.startsWith('data:')) {
-            const data = line.slice(5).trim();
-            if (data === '[DONE]') {
-              return;
+          if (isDone) {
+            return;
+          }
+          
+          if (!isData || !sseContent) {
+            continue;
+          }
+          
+          try {
+            const parsed = JSON.parse(sseContent);
+            
+            // 使用统一解析器提取内容
+            const content = parser.parseContent(parsed);
+            
+            if (content) {
+              // 解析思考标签并输出
+              for (const chunk of parser.parseThinkingTags(content)) {
+                if (chunk.content) {
+                  yield { content: chunk.content };
+                }
+                if (chunk.thinking) {
+                  yield { content: '', thinking: chunk.thinking };
+                }
+              }
             }
             
-            try {
-              const parsed = JSON.parse(data);
-              console.log('解析的流式数据:', parsed);
-              
-              // 处理后端实际返回的数据结构
-              let content = '';
-              
-              // 优先从 result.output.content 获取内容
-              if (parsed.result?.output?.content) {
-                content = parsed.result.output.content;
-              }
-              // 如果没有，尝试从 results 数组中获取
-              else if (parsed.results && parsed.results.length > 0) {
-                const firstResult = parsed.results[0];
-                if (firstResult.output?.content) {
-                  content = firstResult.output.content;
-                }
-              }
-              
-              if (content) {
-                // 可能出现："<think>"、思考片段、"</think>"，或普通正文片段；需要按状态机处理
-                // 1) 包含起始标签：进入思考状态，并处理其后的内容
-                if (content.includes('<think>')) {
-                  inThinking = true;
-                  const afterStart = content.split('<think>')[1] ?? '';
-                  if (afterStart) {
-                    yield { content: '', thinking: afterStart };
-                  }
-                  continue; // 当前行剩余已处理
-                }
-
-                // 2) 包含结束标签：输出结束标签之前的思考内容，并退出思考状态；结束标签之后若有正文则输出
-                if (content.includes('</think>')) {
-                  const [beforeEnd, afterEnd] = content.split('</think>');
-                  if (inThinking && beforeEnd) {
-                    yield { content: '', thinking: beforeEnd };
-                  }
-                  inThinking = false;
-                  if (afterEnd) {
-                    yield { content: afterEnd };
-                  }
-                  continue;
-                }
-
-                // 3) 不含任何标签：按当前状态决定归属
-                if (inThinking) {
-                  yield { content: '', thinking: content };
-                } else {
-                  yield { content: content };
-                }
-              }
-              
-              // 检查是否完成
-              if (parsed.result?.metadata?.finishReason || 
-                  (parsed.results && parsed.results[0]?.metadata?.finishReason)) {
-                return;
-              }
-            } catch (e) {
-              console.warn('解析流式数据失败:', e, data);
+            // 检查是否完成
+            if (parser.isFinished(parsed)) {
+              return;
             }
+          } catch (e) {
+            console.warn('解析流式数据失败:', e, sseContent);
           }
         }
       }
@@ -204,7 +169,7 @@ export class ApiService {
   }
 
   /**
-   * RAG流式聊天
+   * RAG流式聊天（使用统一解析器）
    */
   static async *streamRagChat(request: RagChatRequest): AsyncGenerator<{content: string, thinking?: string}, void, unknown> {
     const response = await fetch(`${API_BASE_URL}/ollama/generate_stream_rag`, {
@@ -226,10 +191,8 @@ export class ApiService {
     }
 
     const decoder = new TextDecoder();
+    const parser = createStreamParser();
     let buffer = '';
-
-    // 流式解析状态机：跟踪是否处于<think>思考内容段
-    let inThinking = false;
 
     try {
       while (true) {
@@ -241,71 +204,40 @@ export class ApiService {
         buffer = lines.pop() || '';
 
         for (const line of lines) {
-          if (line.trim() === '') continue;
+          const { isData, content: sseContent, isDone } = parseSSELine(line);
           
-          if (line.startsWith('data:')) {
-            const data = line.slice(5).trim();
-            if (data === '[DONE]') {
-              return;
+          if (isDone) {
+            return;
+          }
+          
+          if (!isData || !sseContent) {
+            continue;
+          }
+          
+          try {
+            const parsed = JSON.parse(sseContent);
+            
+            // 使用统一解析器提取内容
+            const content = parser.parseContent(parsed);
+            
+            if (content) {
+              // 解析思考标签并输出
+              for (const chunk of parser.parseThinkingTags(content)) {
+                if (chunk.content) {
+                  yield { content: chunk.content };
+                }
+                if (chunk.thinking) {
+                  yield { content: '', thinking: chunk.thinking };
+                }
+              }
             }
             
-            try {
-              const parsed = JSON.parse(data);
-              console.log('解析的RAG流式数据:', parsed);
-              
-              // 处理后端实际返回的数据结构
-              let content = '';
-              
-              // 优先从 result.output.content 获取内容
-              if (parsed.result?.output?.content) {
-                content = parsed.result.output.content;
-              }
-              // 如果没有，尝试从 results 数组中获取
-              else if (parsed.results && parsed.results.length > 0) {
-                const firstResult = parsed.results[0];
-                if (firstResult.output?.content) {
-                  content = firstResult.output.content;
-                }
-              }
-              
-              if (content) {
-                // 可能出现："<think>"、思考片段、"</think>"，或普通正文片段；需要按状态机处理
-                if (content.includes('<think>')) {
-                  inThinking = true;
-                  const afterStart = content.split('<think>')[1] ?? '';
-                  if (afterStart) {
-                    yield { content: '', thinking: afterStart };
-                  }
-                  continue;
-                }
-
-                if (content.includes('</think>')) {
-                  const [beforeEnd, afterEnd] = content.split('</think>');
-                  if (inThinking && beforeEnd) {
-                    yield { content: '', thinking: beforeEnd };
-                  }
-                  inThinking = false;
-                  if (afterEnd) {
-                    yield { content: afterEnd };
-                  }
-                  continue;
-                }
-
-                if (inThinking) {
-                  yield { content: '', thinking: content };
-                } else {
-                  yield { content: content };
-                }
-              }
-              
-              // 检查是否完成
-              if (parsed.result?.metadata?.finishReason || 
-                  (parsed.results && parsed.results[0]?.metadata?.finishReason)) {
-                return;
-              }
-            } catch (e) {
-              console.warn('解析RAG流式数据失败:', e, data);
+            // 检查是否完成
+            if (parser.isFinished(parsed)) {
+              return;
             }
+          } catch (e) {
+            console.warn('解析RAG流式数据失败:', e, sseContent);
           }
         }
       }

@@ -7,7 +7,7 @@ import './index.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ConfigProvider locale={zhCN} theme={{ cssVar: true }}>
+    <ConfigProvider locale={zhCN}>
       <AntdApp>
         <App />
       </AntdApp>

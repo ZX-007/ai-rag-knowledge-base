@@ -14,20 +14,43 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# 环境变量文件（保留示例）
+# 环境变量文件
 .env
 .env.*
 !.env.example
 
-# 覆盖率报告
+# 测试覆盖率报告
 coverage/
+*.lcov
 
 # TypeScript 增量构建信息
 tsconfig.tsbuildinfo
 
 # 缓存与工具
 .eslintcache
+.parcel-cache/
+.cache/
+.temp/
+.tmp/
 
-# 操作系统/IDE 产生的杂项文件
+# 编辑器/IDE 配置
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 操作系统产生的杂项文件
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
 Thumbs.db
+Desktop.ini
+
+# 包管理器锁文件（根据团队约定决定是否忽略）
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml

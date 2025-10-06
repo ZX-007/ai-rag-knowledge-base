@@ -1,13 +1,16 @@
 /*
- * Markdown 展示样式（美观 + 合理缩进）
+ * Markdown 展示样式（现代化设计 + 优化阅读体验）
  * 作用范围：.markdown-body
  */
 
 .markdown-body {
-  color: var(--ant-colorText, #1f1f1f);
-  line-height: 1.65; /* 紧凑行距，减少上下间距 */
+  color: inherit; /* 继承父元素颜色 */
+  line-height: 1.7; /* 优化行距，提升阅读舒适度 */
   font-size: 15px;
   word-wrap: break-word;
+  overflow-wrap: break-word;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
 }
 
 .markdown-body h1,
@@ -16,7 +19,7 @@
 .markdown-body h4,
 .markdown-body h5,
 .markdown-body h6 {
-  color: var(--ant-colorText, #141414);
+  color: inherit; /* 继承父元素颜色 */
   font-weight: 600;
   line-height: 1.4;
   margin: 1.2em 0 0.6em;
@@ -29,23 +32,40 @@
 .markdown-body h5 { font-size: 15px; }
 .markdown-body h6 { font-size: 14px; color: var(--ant-colorTextTertiary, #666); }
 
-/* 段落首行缩进（不影响列表/代码/引用内部段落） */
+/* 段落样式 - 移除首行缩进以匹配现代设计习惯 */
 .markdown-body p { 
-  margin: 0 0 8px;  /* 缩小段落底部间距 */
-  text-indent: 2em; /* 首行缩进 */
+  margin: 0 0 12px;
+  text-indent: 0;
 }
-.markdown-body li p,
-.markdown-body blockquote p,
-.markdown-body pre p { text-indent: 0; }
+
+.markdown-body p:last-child {
+  margin-bottom: 0;
+}
 
 /* 列表缩进与间距 */
 .markdown-body ul,
 .markdown-body ol {
-  padding-left: 1.6em; /* 调小列表缩进，使编号与内容更靠近 */
-  margin: 0 0 8px;
-  list-style-position: inside; /* 让编号/符号与内容同一行，更紧凑 */
+  padding-left: 2em;
+  margin: 0 0 12px;
+  list-style-position: outside;
 }
-.markdown-body li { margin: 2px 0; }
+
+.markdown-body li { 
+  margin: 4px 0;
+  line-height: 1.7;
+}
+
+.markdown-body li > p {
+  margin: 4px 0;
+}
+
+/* 嵌套列表 */
+.markdown-body ul ul,
+.markdown-body ol ol,
+.markdown-body ul ol,
+.markdown-body ol ul {
+  margin: 4px 0;
+}
 
 /* 引用块样式 */
 .markdown-body blockquote {
@@ -58,17 +78,46 @@
 
 /* 代码块与行内代码 */
 .markdown-body pre {
-  background: var(--ant-colorBgContainer, #f6f8fa);
+  background: var(--ant-colorBgElevated, #f6f8fa);
   border: 1px solid var(--ant-colorBorder, #e1e4e8);
   border-radius: 8px;
-  padding: 10px;
+  padding: 16px;
   overflow: auto;
-  margin: 8px 0; /* 缩小代码块与上下内容的间距 */
+  margin: 16px 0;
+  font-size: 14px;
+  line-height: 1.6;
 }
+
+.markdown-body pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  color: var(--ant-colorText);
+}
+
 .markdown-body code {
-  background: var(--ant-colorBgContainer, #f6f8fa);
+  background: rgba(128, 128, 128, 0.15);
   border-radius: 4px;
-  padding: 2px 4px;
+  padding: 2px 6px;
+  font-size: 0.9em;
+  font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  border: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+/* 深色主题下的代码块优化 */
+body[data-theme='dark'] .markdown-body pre {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+body[data-theme='dark'] .markdown-body pre code {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+body[data-theme='dark'] .markdown-body code {
+  background: rgba(128, 128, 128, 0.2);
+  border-color: rgba(128, 128, 128, 0.3);
 }
 
 /* 表格样式 */
@@ -100,5 +149,43 @@
 /* 链接可读性 */
 .markdown-body a {
   color: var(--ant-colorLink, var(--ant-colorPrimary, #1677ff));
-  text-decoration: underline;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border-bottom: 1px solid transparent;
+}
+
+.markdown-body a:hover {
+  color: var(--ant-colorPrimaryHover, #4096ff);
+  border-bottom-color: var(--ant-colorPrimaryHover, #4096ff);
+}
+
+/* 数学公式样式 */
+.markdown-body .katex {
+  font-size: 1.1em;
+}
+
+.markdown-body .katex-display {
+  margin: 16px 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+/* 分隔线 */
+.markdown-body hr {
+  border: none;
+  height: 1px;
+  background: var(--ant-colorBorder, #e1e4e8);
+  margin: 24px 0;
+}
+
+/* 任务列表 */
+.markdown-body input[type="checkbox"] {
+  margin-right: 8px;
+  cursor: pointer;
+}
+
+/* 删除线 */
+.markdown-body del {
+  text-decoration: line-through;
+  opacity: 0.7;
 }
