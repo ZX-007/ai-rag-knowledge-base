@@ -228,12 +228,8 @@ const App: React.FC = () => {
   return (
     <ConfigProvider theme={{ cssVar: true, hashed: false, algorithm: theme === 'dark' ? antdTheme.darkAlgorithm : antdTheme.defaultAlgorithm }}>
       <div className="app-container">
-        {/* 固定顶部栏 */}
+        {/* 固定顶部栏（移除页面标题，仅保留控制区）*/}
         <div className="fixed-header">
-          <Header className="chat-header">
-            🤖 AI RAG 知识库对话系统
-          </Header>
-
           <div className="chat-controls">
             <Space split={<Divider type="vertical" />} wrap>
               <ModelSelector

@@ -5,6 +5,8 @@
 
 .markdown-body {
   color: inherit; /* 继承父元素颜色 */
+  /* 修复浅色主题下回复区域出现黑色背景的问题：强制透明 */
+  background: transparent !important;
   line-height: 1.7; /* 优化行距，提升阅读舒适度 */
   font-size: 15px;
   word-wrap: break-word;
@@ -78,7 +80,8 @@
 
 /* 代码块与行内代码 */
 .markdown-body pre {
-  background: var(--ant-colorBgElevated, #f6f8fa);
+  /* 浅色主题代码块背景（避免被外部样式覆盖为黑色） */
+  background: var(--ant-colorBgElevated, #f6f8fa) !important;
   border: 1px solid var(--ant-colorBorder, #e1e4e8);
   border-radius: 8px;
   padding: 16px;
@@ -103,6 +106,12 @@
   font-size: 0.9em;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
   border: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+/* 浅色主题下高亮区域背景，防止出现黑底 */
+.markdown-body .hljs {
+  background: var(--ant-colorBgElevated, #f6f8fa) !important;
+  color: var(--ant-colorText, #333);
 }
 
 /* 深色主题下的代码块优化 */

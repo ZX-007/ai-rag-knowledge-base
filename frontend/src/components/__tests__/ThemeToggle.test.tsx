@@ -6,9 +6,9 @@ import ThemeToggle from '../ThemeToggle';
 describe('ThemeToggle', () => {
   it('渲染按钮并根据模式显示文案', () => {
     const htmlLight = renderToString(<ThemeToggle mode="light" onToggle={() => {}} />);
-    expect(htmlLight).toContain('黑色主题');
+    expect(htmlLight).toContain('深色主题');
     const htmlDark = renderToString(<ThemeToggle mode="dark" onToggle={() => {}} />);
-    expect(htmlDark).toContain('白色主题');
+    expect(htmlDark).toContain('浅色主题');
   });
 
   it('点击时应触发回调并传递下一个模式', () => {

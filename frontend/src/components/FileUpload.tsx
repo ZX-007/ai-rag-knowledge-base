@@ -82,7 +82,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadSuccess }) => {
         type="primary" 
         icon={<UploadOutlined />} 
         onClick={showModal}
-        style={{ backgroundColor: '#52c41a', borderColor: '#52c41a' }}
+        style={{ backgroundColor: 'var(--ant-colorSuccess, #52c41a)', borderColor: 'var(--ant-colorSuccess, #52c41a)', color: 'var(--ant-colorText, #000000)' }}
       >
         上传文档
       </Button>

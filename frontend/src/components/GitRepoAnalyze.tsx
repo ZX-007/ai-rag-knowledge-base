@@ -85,7 +85,7 @@ const GitRepoAnalyze: React.FC<GitRepoAnalyzeProps> = ({ onAnalyzeSuccess }) => 
       <Button 
         icon={<GithubOutlined />} 
         onClick={show}
-        style={{ backgroundColor: '#1677ff', color: '#fff' }}
+        style={{ backgroundColor: 'var(--ant-colorPrimary, #1677ff)', color: 'var(--ant-colorText, #000000)' }}
       >
         分析 Git 仓库
       </Button>

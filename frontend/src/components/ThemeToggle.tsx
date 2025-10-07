@@ -36,7 +36,7 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ mode, onToggle }) => {
       icon={isDark ? <BulbOutlined /> : <MoonOutlined />}
       onClick={handleClick}
     >
-      {isDark ? '白色主题' : '黑色主题'}
+      {isDark ? '浅色主题' : '深色主题'}
     </Button>
   );
 };

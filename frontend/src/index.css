@@ -11,12 +11,24 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: var(--ant-colorBgLayout, #f5f5f5);
+  /* 浅色主题下的默认字体颜色：黑色 */
+  color: var(--ant-colorText, #000000);
 }
 
 /* 深色主题覆盖（通过在 body 上设置 data-theme="dark" 启用） */
 body[data-theme='dark'] {
-  background-color: var(--ant-colorBgLayout, #121212);
-  color: var(--ant-colorText, #e6e6e6);
+  background-color: var(--ant-colorBgLayout, #1f1f1f);
+  /* 深色主题下的默认字体颜色：白色 */
+  color: var(--ant-colorText, #ffffff);
+  /* 显式设置 AntD 文本变量，避免内联样式或未继承场景下仍为黑色 */
+  --ant-colorText: #ffffff;
+  --ant-colorTextSecondary: #cbd5e1;
+  --ant-colorTextTertiary: #94a3b8;
+  /* 统一深色主题的背景层级，确保与截图一致的灰黑底色 */
+  --ant-colorBgLayout: #1f1f1f;      /* 页面整体背景 */
+  --ant-colorBgContainer: #1f1f1f;   /* 容器与卡片背景（统一为同色） */
+  --ant-colorBgElevated: #2a2a2a;    /* 浮层/输入区略浅的背景 */
+  --ant-colorBorder: #333333;        /* 边框统一为深灰 */
   /* 主题变量：供组件与内联样式使用 */
   --panel-bg: var(--ant-colorBgElevated);
   --panel-text: var(--ant-colorTextSecondary);
@@ -51,9 +63,10 @@ body[data-theme='dark'] .chat-controls {
 }
 
 body[data-theme='dark'] .fixed-input {
-  background: var(--ant-colorBgElevated, #141414);
-  border-top-color: var(--ant-colorBorder, #333);
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+  background: var(--ant-colorBgLayout, #1f1f1f);
+  /* 移除顶部间隔线与阴影 */
+  border-top: none;
+  box-shadow: none;
 }
 
 body[data-theme='dark'] .streaming-cursor {
@@ -84,11 +97,20 @@ body[data-theme='dark'] .thinking-timestamp {
 
 /* 深色主题下的欢迎页面优化 */
 body[data-theme='dark'] .empty-state-title {
-  color: var(--ant-colorText);
+  color: var(--ant-colorText, #ffffff);
 }
 
 body[data-theme='dark'] .empty-state-subtitle {
-  color: var(--ant-colorText) !important;
+  color: var(--ant-colorText, #ffffff) !important;
+}
+
+/* 欢迎空态区域：确保标题与副标题随主题切换 */
+.empty-state-title {
+  color: var(--ant-colorText);
+}
+
+.empty-state-subtitle {
+  color: var(--ant-colorText);
 }
 
 #root {
@@ -117,6 +139,11 @@ body[data-theme='dark'] .empty-state-subtitle {
   flex-direction: column;
   background: var(--ant-colorBgLayout, #ffffff);
   overflow: hidden;
+}
+
+/* 统一 div 文本颜色，确保随主题切换反转 */
+.app-container div {
+  color: var(--ant-colorText);
 }
 
 /* 固定顶部栏 */
@@ -153,7 +180,8 @@ body[data-theme='dark'] .empty-state-subtitle {
   display: flex;
   flex-direction: column;
   padding-top: 140px; /* 为固定顶部栏留出空间 */
-  overflow: hidden;
+  /* 将滚动条移至页面最右侧：在外层容器滚动 */
+  overflow-y: auto;
 }
 
 .chat-content-container {
@@ -162,7 +190,8 @@ body[data-theme='dark'] .empty-state-subtitle {
   width: 100%;
   margin: 0 auto;
   padding: 0 20px;
-  overflow-y: auto;
+  /* 内容区域不再单独滚动，避免内嵌滚动条 */
+  overflow: visible;
 }
 
 .empty-state {
@@ -204,10 +233,11 @@ body[data-theme='dark'] .empty-state-subtitle {
   bottom: 0;
   left: 0;
   right: 0;
-  background: var(--ant-colorBgElevated, #fafafa);
-  border-top: 1px solid var(--ant-colorBorder, #f0f0f0);
+  background: var(--ant-colorBgLayout, #ffffff);
+  /* 移除顶部间隔线与阴影 */
+  border-top: none;
   padding: 16px 0;
-  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: none;
 }
 
 .input-container {
@@ -215,6 +245,72 @@ body[data-theme='dark'] .empty-state-subtitle {
   width: 100%;
   margin: 0 auto;
   padding: 0 20px;
+}
+
+/* 顶部控制区：模型选择与知识库选择的主题适配 */
+.chat-controls .ant-select-selector {
+  background: var(--ant-colorBgElevated) !important;
+  color: var(--ant-colorText) !important;
+  border-color: var(--ant-colorBorder) !important;
+}
+.chat-controls .ant-select-selection-item {
+  color: var(--ant-colorText) !important;
+}
+.chat-controls .ant-select-selection-placeholder {
+  color: var(--ant-colorTextTertiary) !important;
+}
+.chat-controls .ant-select-focused .ant-select-selector,
+.chat-controls .ant-select-selector:focus,
+.chat-controls .ant-select-selector:hover {
+  border-color: var(--ant-colorPrimary) !important;
+  box-shadow: 0 0 0 2px var(--ant-colorPrimaryBorderHover, rgba(64, 150, 255, 0.35)) !important;
+}
+
+/* 底部输入框主题适配 */
+.chat-input-area .ant-input,
+.chat-input-area .ant-input-textarea,
+.chat-input-area .ant-input-textarea textarea {
+  background: var(--ant-colorBgContainer) !important;
+  color: var(--ant-colorText) !important;
+  border-color: var(--ant-colorBorder) !important;
+  border-radius: 32px !important; /* 更大的胶囊圆角 */
+}
+.chat-input-area .ant-input::placeholder,
+.chat-input-area .ant-input-textarea textarea::placeholder {
+  color: var(--ant-colorTextTertiary) !important;
+}
+.chat-input-area .ant-input:focus,
+.chat-input-area .ant-input-focused,
+.chat-input-area .ant-input-textarea:focus-within {
+  border-color: var(--ant-colorPrimary) !important;
+  box-shadow: 0 0 0 2px var(--ant-colorPrimaryBorderHover, rgba(64, 150, 255, 0.35)) !important;
+}
+
+/* 放大输入框整体尺寸（类似第二张图）*/
+.chat-input-area .ant-input-textarea {
+  padding: 4px !important; /* 外层留白，便于更圆润 */
+}
+.chat-input-area .ant-input-textarea textarea {
+  min-height: 48px !important; /* 提高默认高度 */
+  padding: 14px 18px !important; /* 增加内边距以获得更厚的胶囊感 */
+  font-size: 16px !important;
+  line-height: 1.5 !important;
+}
+
+/* 深色主题下的输入框颜色，按截图调整 */
+body[data-theme='dark'] .chat-input-area .ant-input-textarea,
+body[data-theme='dark'] .chat-input-area .ant-input-textarea textarea {
+  background: #2b2b2b !important; /* 深灰胶囊背景 */
+  color: rgba(255, 255, 255, 0.9) !important;
+  border-color: #3a3a3a !important; /* 更深的边框 */
+  border-radius: 32px !important;
+}
+body[data-theme='dark'] .chat-input-area .ant-input-textarea textarea::placeholder {
+  color: #9ca3af !important;
+}
+body[data-theme='dark'] .chat-input-area .ant-input-textarea:focus-within {
+  border-color: var(--ant-colorPrimary) !important;
+  box-shadow: 0 0 0 2px rgba(64, 150, 255, 0.2) !important; /* 细微的蓝色聚焦光晕 */
 }
 
 .message-item {
@@ -267,10 +363,26 @@ body[data-theme='dark'] .empty-state-subtitle {
 }
 
 .thinking-collapse {
-  background: var(--ant-colorBgContainer) !important;
-  border-radius: 8px;
-  border: 1px solid var(--ant-colorBorder);
+  /* 去除思考内容的边框与背景，实现无缝衔接 */
+  background: transparent !important;
+  border-radius: 0;
+  border: none !important;
+  box-shadow: none !important;
 }
+
+/* 移除 AntD Collapse 在思考区域的默认边框与分隔线 */
+.thinking-collapse .ant-collapse,
+.thinking-collapse .ant-collapse-item,
+.thinking-collapse .ant-collapse-content,
+.thinking-collapse .ant-collapse-content-box,
+.thinking-collapse .ant-collapse-header {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* 保持与正文的间距更贴近，无缝衔接 */
+.thinking-section { margin-bottom: 8px; }
 
 .thinking-label {
   color: var(--ant-colorTextSecondary) !important;
