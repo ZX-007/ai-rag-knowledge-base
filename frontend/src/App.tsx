@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Layout, Space, Divider, ConfigProvider, theme as antdTheme, App as AntdApp } from 'antd';
+import { Space, Divider, ConfigProvider, theme as antdTheme, App as AntdApp } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
 import { Message, AppState } from './types';
 import { ApiService } from './services/api';
@@ -11,8 +11,6 @@ import FileUpload from './components/FileUpload';
 import GitRepoAnalyze from './components/GitRepoAnalyze';
 import ThemeToggle from './components/ThemeToggle';
 import type { ThemeMode } from './components/ThemeToggle';
-
-const { Header } = Layout;
 
 /**
  * 主应用组件
