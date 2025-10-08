@@ -12,6 +12,8 @@ spring:
     # Ollama configuration
     ollama:
       base-url: ${OLLAMA_BASE_URL}
+      init:
+        pull-model-strategy: never
       chat:
         options:
           model: ${OLLAMA_CHAT_MODEL}

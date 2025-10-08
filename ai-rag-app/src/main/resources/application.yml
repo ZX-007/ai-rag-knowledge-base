@@ -15,9 +15,17 @@ spring:
     password: root
   # Spring AI configuration
   ai:
+    model:
+      embedding: ollama
     # Ollama configuration
     ollama:
       base-url: http://localhost:11434
+      init:
+        pull-model-strategy: always
+        chat:
+          additional-models: deepseek-r1:1.5b
+        embedding:
+          additional-models: nomic-embed-text
       chat:
         options:
           model: deepseek-r1:1.5b
@@ -35,6 +43,14 @@ spring:
       embedding:
         options:
           model: text-embedding-nomic-embed-text-v1.5@q5_k_m
+    vectorstore:
+      pgvector:
+        schema-name: public
+        table-name: vector_store
+        schema-validation: true
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 768
 
 # Redis configuration
 redis:

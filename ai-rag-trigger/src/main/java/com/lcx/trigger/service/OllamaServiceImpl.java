@@ -1,20 +1,19 @@
 package com.lcx.trigger.service;
 
-
 import com.lcx.api.IAiService;
 import com.lcx.api.exception.SystemException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.ChatResponse;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.ollama.OllamaChatClient;
+import org.springframework.ai.ollama.OllamaChatModel;
 import org.springframework.ai.ollama.api.OllamaOptions;
-import org.springframework.ai.vectorstore.PgVectorStore;
 import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import reactor.core.publisher.Flux;
@@ -36,16 +35,15 @@ import java.util.stream.Collectors;
  *
  * @author lcx
  * @version 1.0
- * @since 1.0
+ * @since 1.1
  * @see com.lcx.api.IAiService AI 服务接口
- * @see org.springframework.ai.ollama.OllamaChatClient Ollama 聊天客户端
  */
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class OllamaServiceImpl implements IAiService {
 
-    private final OllamaChatClient chatClient;
+    private final OllamaChatModel chatModel;
     private final PgVectorStore pgVectorStore;
     private final RestTemplate restTemplate;
 
@@ -86,13 +84,13 @@ public class OllamaServiceImpl implements IAiService {
         log.debug("开始生成 AI 回复，模型: {}, 消息长度: {}", model, message.length());
 
         try {
-            ChatResponse response = chatClient.call(new Prompt(
+            ChatResponse response = chatModel.call(new Prompt(
                     message,
-                    OllamaOptions.create().withModel(model)
+                    OllamaOptions.builder().model(model).build()
             ));
 
             log.debug("AI 回复生成完成，模型: {}, 响应长度: {}",
-                    model, response.getResult().getOutput().getContent().length());
+                    model, response.getResult().getOutput().getText().length());
             return response;
         } catch (Exception e) {
             // 记录AI服务调用失败的业务上下文，包含更多调试信息
@@ -108,9 +106,9 @@ public class OllamaServiceImpl implements IAiService {
         log.debug("开始流式生成 AI 回复，模型: {}, 消息长度: {}", model, message.length());
 
         try {
-            Flux<ChatResponse> responseStream = chatClient.stream(new Prompt(
+            Flux<ChatResponse> responseStream = chatModel.stream(new Prompt(
                     message,
-                    OllamaOptions.create().withModel(model)
+                    OllamaOptions.builder().model(model).build()
             ));
 
             log.debug("AI 回复流创建成功，模型: {}", model);
@@ -141,19 +139,21 @@ public class OllamaServiceImpl implements IAiService {
                 """;
 
         // 创建搜索请求：指定文档
-        SearchRequest request = SearchRequest.query(message)
-                .withTopK(5)
-                .withFilterExpression("knowledge == '" + ragTag + "'");
+        SearchRequest request = SearchRequest.builder()
+                .query(message)
+                .topK(5)
+                .filterExpression("knowledge == '" + ragTag + "'")
+                .build();
 
         List<Document> documents = pgVectorStore.similaritySearch(request);
         String documentCollectors = documents.stream()
-                .map(Document::getContent)
+                .map(Document::getText)
                 .collect(Collectors.joining());
         Message ragMessage = new SystemPromptTemplate(SYSTEM_PROMPT).createMessage(Map.of("documents", documentCollectors));
 
-        return chatClient.stream(new Prompt(
+        return chatModel.stream(new Prompt(
                 List.of(new UserMessage(message), ragMessage),
-                OllamaOptions.create().withModel(model)
+                OllamaOptions.builder().model(model).build()
         ));
     }
 

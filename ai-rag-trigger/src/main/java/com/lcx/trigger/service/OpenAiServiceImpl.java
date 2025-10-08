@@ -4,16 +4,17 @@ import com.lcx.api.IAiService;
 import com.lcx.api.exception.SystemException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.ChatResponse;
 import org.springframework.ai.chat.messages.Message;
 import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
-import org.springframework.ai.openai.OpenAiChatClient;
+import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
-import org.springframework.ai.vectorstore.PgVectorStore;
+import org.springframework.ai.openai.OpenAiEmbeddingModel;
 import org.springframework.ai.vectorstore.SearchRequest;
+import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -26,7 +27,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OpenAiServiceImpl implements IAiService {
 
-    private final OpenAiChatClient chatClient;
+    private final OpenAiChatModel chatModel;
     private final PgVectorStore pgVectorStore;
 
     @Override
@@ -41,13 +42,13 @@ public class OpenAiServiceImpl implements IAiService {
         log.debug("开始生成 AI 回复，模型: {}, 消息长度: {}", model, message.length());
 
         try {
-            ChatResponse response = chatClient.call(new Prompt(
+            ChatResponse response = chatModel.call(new Prompt(
                     message,
-                    OpenAiChatOptions.builder().withModel(model).build()
+                    OpenAiChatOptions.builder().model(model).build()
             ));
 
             log.debug("AI 回复生成完成，模型: {}, 响应长度: {}",
-                    model, response.getResult().getOutput().getContent().length());
+                    model, response.getResult().getOutput().getText().length());
             return response;
         } catch (Exception e) {
             // 记录AI服务调用失败的业务上下文，包含更多调试信息
@@ -63,9 +64,9 @@ public class OpenAiServiceImpl implements IAiService {
         log.debug("开始流式生成 AI 回复，模型: {}, 消息长度: {}", model, message.length());
 
         try {
-            Flux<ChatResponse> responseStream = chatClient.stream(new Prompt(
+            Flux<ChatResponse> responseStream = chatModel.stream(new Prompt(
                     message,
-                    OpenAiChatOptions.builder().withModel(model).build()
+                    OpenAiChatOptions.builder().model(model).build()
             ));
 
             log.info("AI 回复流创建成功，模型: {}", model);
@@ -99,15 +100,17 @@ public class OpenAiServiceImpl implements IAiService {
                     """;
 
             // 创建搜索请求：指定文档
-            SearchRequest request = SearchRequest.query(message)
-                    .withTopK(5)
-                    .withFilterExpression("knowledge == '" + ragTag + "'");
+            SearchRequest request = SearchRequest.builder()
+                    .query(message)
+                    .topK(5)
+                    .filterExpression("knowledge == '" + ragTag + "'")
+                    .build();
 
             List<Document> documents = pgVectorStore.similaritySearch(request);
             log.debug("RAG 文档检索完成，找到 {} 个相关文档", documents.size());
 
             String documentCollectors = documents.stream()
-                    .map(Document::getContent)
+                    .map(Document::getText)
                     .collect(Collectors.joining("\n\n"));
 
             // 检查是否找到相关文档
@@ -118,9 +121,9 @@ public class OpenAiServiceImpl implements IAiService {
 
             Message ragMessage = new SystemPromptTemplate(SYSTEM_PROMPT).createMessage(Map.of("documents", documentCollectors));
 
-            Flux<ChatResponse> responseStream = chatClient.stream(new Prompt(
+            Flux<ChatResponse> responseStream = chatModel.stream(new Prompt(
                     List.of(ragMessage, new UserMessage(message)),
-                    OpenAiChatOptions.builder().withModel(model).build()
+                    OpenAiChatOptions.builder().model(model).build()
             ));
 
             log.debug("RAG AI 回复流创建成功，模型: {}", model);

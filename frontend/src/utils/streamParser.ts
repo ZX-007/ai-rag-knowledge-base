@@ -23,7 +23,7 @@ export interface ParsedStreamData {
  * 支持多种常见的流式响应格式：
  * - OpenAI 格式：{ choices: [{ delta: { content } }] }
  * - Anthropic 格式：{ delta: { text } }
- * - 自定义格式：{ result: { output: { content } } }
+ * - 自定义格式：{ result: { output: { text } } }
  * - 简单格式：{ content, text, message }
  */
 export class StreamParser {
@@ -33,16 +33,16 @@ export class StreamParser {
    * 解析流式JSON数据，提取内容
    */
   parseContent(parsed: any): string {
-    // 优先级1: 标准化的 result.output.content（后端自定义格式）
-    if (parsed.result?.output?.content) {
-      return parsed.result.output.content;
+    // 优先级1: 标准化的 result.output.text
+    if (parsed.result?.output?.text) {
+      return parsed.result.output.text;
     }
 
     // 优先级2: results 数组格式
     if (Array.isArray(parsed.results) && parsed.results.length > 0) {
       const firstResult = parsed.results[0];
-      if (firstResult.output?.content) {
-        return firstResult.output.content;
+      if (firstResult.output?.text) {
+        return firstResult.output.text;
       }
     }
 

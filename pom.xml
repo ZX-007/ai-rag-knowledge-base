@@ -6,7 +6,7 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.3</version>
+        <version>3.4.10</version>
         <relativePath/>
     </parent>
 
@@ -30,13 +30,13 @@
         <java.version>17</java.version>
         
         <!-- Spring AI version -->
-        <spring-ai.version>0.8.1</spring-ai.version>
+        <spring-ai.version>1.0.0-M8</spring-ai.version>
         
         <!-- Third-party library versions -->
         <fastjson.version>2.0.48</fastjson.version>
         <commons-lang3.version>3.14.0</commons-lang3.version>
         <guava.version>33.2.1-jre</guava.version>
-        <redisson.version>3.35.0</redisson.version>
+        <redisson.version>3.52.0</redisson.version>
         <jgit.version>5.13.0.202109080827-r</jgit.version>
         
         <!-- Validation versions -->

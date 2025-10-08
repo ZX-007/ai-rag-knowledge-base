@@ -1,6 +1,6 @@
 package com.lcx.api;
 
-import org.springframework.ai.chat.ChatResponse;
+import org.springframework.ai.chat.model.ChatResponse;
 import reactor.core.publisher.Flux;
 
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
  * </p>
  *
  * @author lcx
- * @version 1.0
+ * @version 1.1
  * @since 1.0
  */
 public interface IAiService {
