@@ -29,7 +29,7 @@ export class ApiService {
    * 查询可用模型列表
    */
   static async getAvailableModels(): Promise<string[]> {
-    const response = await withTimeout(`${API_BASE_URL}/ollama/models`);
+    const response = await withTimeout(`${API_BASE_URL}/chat/models`);
     ensureOk(response);
     const result: ApiResponse<string[]> = await response.json();
     
@@ -94,7 +94,7 @@ export class ApiService {
    * 流式聊天（使用统一解析器）
    */
   static async *streamChat(request: ChatRequest): AsyncGenerator<{content: string, thinking?: string}, void, unknown> {
-    const response = await fetch(`${API_BASE_URL}/ollama/generate_stream`, {
+    const response = await fetch(`${API_BASE_URL}/chat/generate_stream`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ export class ApiService {
    * RAG流式聊天（使用统一解析器）
    */
   static async *streamRagChat(request: RagChatRequest): AsyncGenerator<{content: string, thinking?: string}, void, unknown> {
-    const response = await fetch(`${API_BASE_URL}/ollama/generate_stream_rag`, {
+    const response = await fetch(`${API_BASE_URL}/chat/generate_stream_rag`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

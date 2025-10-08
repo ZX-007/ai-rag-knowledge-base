@@ -18,8 +18,8 @@ import java.util.List;
 @Validated
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/openai")
-public class OpenAiController {
+@RequestMapping("/api/v1/chat")
+public class ChatController {
 
     private final OpenAiServiceImpl aiService;
 

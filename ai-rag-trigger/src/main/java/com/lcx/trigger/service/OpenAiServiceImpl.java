@@ -12,7 +12,6 @@ import org.springframework.ai.chat.prompt.SystemPromptTemplate;
 import org.springframework.ai.document.Document;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
-import org.springframework.ai.openai.OpenAiEmbeddingModel;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
 import org.springframework.stereotype.Service;
@@ -33,7 +32,7 @@ public class OpenAiServiceImpl implements IAiService {
     @Override
     public List<String> queryAvailableModels() {
         // todo 写死对话模型
-        return List.of("deepseek-r1-distill-qwen-1.5b");
+        return List.of("deepseek-r1:1.5b");
     }
 
     @Override
