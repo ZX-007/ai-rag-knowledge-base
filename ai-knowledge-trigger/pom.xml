@@ -4,11 +4,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.lcx</groupId>
-        <artifactId>ai-rag-knowledge-base</artifactId>
+        <artifactId>ai-knowledge-base</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
-    <artifactId>ai-rag-trigger</artifactId>
+    <artifactId>ai-knowledge-trigger</artifactId>
 
     <dependencies>
         <dependency>
@@ -37,7 +37,7 @@
         <!-- Internal API Module -->
         <dependency>
             <groupId>com.lcx</groupId>
-            <artifactId>ai-rag-api</artifactId>
+            <artifactId>ai-knowledge-api</artifactId>
         </dependency>
 
         <!-- Lombok -->

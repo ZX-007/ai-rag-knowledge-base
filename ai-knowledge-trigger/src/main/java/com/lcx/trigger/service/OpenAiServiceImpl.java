@@ -14,6 +14,7 @@ import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.ai.openai.OpenAiChatOptions;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.pgvector.PgVectorStore;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -26,13 +27,15 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class OpenAiServiceImpl implements IAiService {
 
+    @Value("${spring.ai.openai.chat.options.model}")
+    private String model;
     private final OpenAiChatModel chatModel;
     private final PgVectorStore pgVectorStore;
 
     @Override
     public List<String> queryAvailableModels() {
         // todo 写死对话模型
-        return List.of("deepseek-r1:1.5b");
+        return List.of(model);
     }
 
     @Override
@@ -68,7 +71,7 @@ public class OpenAiServiceImpl implements IAiService {
                     OpenAiChatOptions.builder().model(model).build()
             ));
 
-            log.info("AI 回复流创建成功，模型: {}", model);
+            log.debug("AI 回复流创建成功，模型: {}", model);
             return responseStream
                     .doOnNext(response -> log.debug("收到 AI 回复片段，模型: {}", model))
                     .doOnError(error -> {

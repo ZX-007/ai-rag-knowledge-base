@@ -13,7 +13,6 @@ import org.springframework.ai.vectorstore.SimpleVectorStore;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.io.PathResource;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;

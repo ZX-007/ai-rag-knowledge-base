@@ -11,16 +11,16 @@
     </parent>
 
     <groupId>com.lcx</groupId>
-    <artifactId>ai-rag-knowledge-base</artifactId>
+    <artifactId>ai-knowledge-base</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>pom</packaging>
-    <name>ai-rag-knowledge-base</name>
-    <description>ai-rag-knowledge-base</description>
+    <name>ai-knowledge-base</name>
+    <description>ai-knowledge-base</description>
 
     <modules>
-        <module>ai-rag-api</module>
-        <module>ai-rag-trigger</module>
-        <module>ai-rag-app</module>
+        <module>ai-knowledge-api</module>
+        <module>ai-knowledge-trigger</module>
+        <module>ai-knowledge-app</module>
     </modules>
 
     <properties>
@@ -111,12 +111,12 @@
             <!-- Internal modules -->
             <dependency>
                 <groupId>com.lcx</groupId>
-                <artifactId>ai-rag-api</artifactId>
+                <artifactId>ai-knowledge-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.lcx</groupId>
-                <artifactId>ai-rag-trigger</artifactId>
+                <artifactId>ai-knowledge-trigger</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
