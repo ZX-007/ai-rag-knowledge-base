@@ -59,6 +59,20 @@ const MarkdownText: React.FC<MarkdownTextProps> = ({ content, isStreaming = fals
         components={{
           // 优化代码块渲染
           code({ node, inline, className, children, ...props }: any) {
+            const rawText = String(children ?? '');
+            const trimmed = rawText.replace(/\n+$/, '');
+            const isSingleLine = !trimmed.includes('\n');
+            const hasLanguage = typeof className === 'string' && /language-/.test(className);
+
+            // 将“无语言且仅一行”的围栏代码以行内代码渲染，避免错误的块级展示
+            if (!inline && isSingleLine && !hasLanguage) {
+              return (
+                <code className={className} {...props}>
+                  {trimmed}
+                </code>
+              );
+            }
+
             return !inline ? (
               <pre className={className}>
                 <code className={className} {...props}>

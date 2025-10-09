@@ -80,7 +80,7 @@
 
 /* 代码块与行内代码 */
 .markdown-body pre {
-  /* 浅色主题代码块背景（避免被外部样式覆盖为黑色） */
+  /* 浅色主题代码块：统一浅底深字，避免被外部样式覆盖为黑底或浅字 */
   background: var(--ant-colorBgElevated, #f6f8fa) !important;
   border: 1px solid var(--ant-colorBorder, #e1e4e8);
   border-radius: 8px;
@@ -89,6 +89,7 @@
   margin: 16px 0;
   font-size: 14px;
   line-height: 1.6;
+  color: var(--ant-colorText, #24292e);
 }
 
 .markdown-body pre code {
@@ -96,22 +97,32 @@
   padding: 0;
   border-radius: 0;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  color: var(--ant-colorText);
+  color: var(--ant-colorText, #24292e);
+}
+
+/* 统一高亮库在代码块内的背景为透明，避免与外层 pre 背景叠加不协调 */
+.markdown-body pre code .hljs,
+.markdown-body pre .hljs,
+.markdown-body code .hljs {
+  background: transparent !important;
 }
 
 .markdown-body code {
-  background: rgba(128, 128, 128, 0.15);
+  /* 行内代码：增强对比度与可读性 */
+  background: rgba(27, 31, 35, 0.06);
   border-radius: 4px;
   padding: 2px 6px;
-  font-size: 0.9em;
+  font-size: 0.92em;
   font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
-  border: 1px solid rgba(128, 128, 128, 0.2);
+  border: 1px solid rgba(27, 31, 35, 0.12);
+  color: var(--ant-colorText, #24292e);
 }
 
 /* 浅色主题下高亮区域背景，防止出现黑底 */
-.markdown-body .hljs {
-  background: var(--ant-colorBgElevated, #f6f8fa) !important;
-  color: var(--ant-colorText, #333);
+/* 仅在代码块(pre)内定义高亮容器的基础颜色，行内代码不套用此背景 */
+.markdown-body pre .hljs {
+  background: transparent !important;
+  color: var(--ant-colorText, #24292e);
 }
 
 /* 深色主题下的代码块优化 */
@@ -143,8 +154,26 @@ body[data-theme='dark'] .markdown-body code {
 .markdown-body thead th {
   background: var(--ant-colorBgElevated, #f3f4f6);
 }
+/*
+ * 表格行底色：
+ * - 浅色主题：偶数行白色、奇数行浅灰，防止被外部库（如 github-markdown-css）
+ *   的深色变量覆盖导致“偶数行变黑”的问题
+ * - 深色主题：两种深浅灰做斑马纹
+ */
+.markdown-body tbody tr {
+  background: #ffffff !important; /* 强制偶数行为白色，兜底防黑底 */
+  color: inherit;
+}
 .markdown-body tbody tr:nth-child(odd) {
-  background: var(--ant-colorBgContainer, #fafafa);
+  background: #f7f8fa !important; /* 浅灰斑马纹 */
+}
+
+/* 深色主题下表格斑马纹 */
+body[data-theme='dark'] .markdown-body tbody tr {
+  background: rgba(255, 255, 255, 0.03) !important;
+}
+body[data-theme='dark'] .markdown-body tbody tr:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.06) !important;
 }
 
 /* 图片响应与美化 */
@@ -187,10 +216,46 @@ body[data-theme='dark'] .markdown-body code {
   margin: 24px 0;
 }
 
-/* 任务列表 */
+/* 任务列表（GFM）自定义复选框：在浅/深色主题下都保持高可见性 */
 .markdown-body input[type="checkbox"] {
   margin-right: 8px;
-  cursor: pointer;
+  width: 18px;
+  height: 18px;
+  vertical-align: -2px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 2px solid var(--ant-colorBorder, #d9d9d9);
+  border-radius: 4px;
+  background: var(--ant-colorBgContainer, #ffffff);
+  position: relative;
+  cursor: default; /* 任务列表通常是只读的 */
+}
+.markdown-body input[type="checkbox"]:checked {
+  background: var(--ant-colorPrimary, #1677ff);
+  border-color: var(--ant-colorPrimary, #1677ff);
+}
+.markdown-body input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 10px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+/* 避免浏览器对 disabled 复选框的降透明，确保可读性 */
+.markdown-body input[type="checkbox"][disabled] { opacity: 1; }
+
+/* 深色主题下的对比度调整 */
+body[data-theme='dark'] .markdown-body input[type="checkbox"] {
+  background: var(--ant-colorBgContainer, #1f1f1f);
+  border-color: var(--ant-colorBorder, #333333);
+}
+body[data-theme='dark'] .markdown-body input[type="checkbox"]:checked {
+  background: var(--ant-colorPrimary, #1677ff);
+  border-color: var(--ant-colorPrimary, #1677ff);
 }
 
 /* 删除线 */

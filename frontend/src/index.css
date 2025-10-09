@@ -472,7 +472,8 @@ body[data-theme='dark'] .markdown-body pre {
 body[data-theme='dark'] .markdown-body code {
   background: #0d1117;
 }
-body[data-theme='dark'] .markdown-body .hljs {
-  background: #0d1117;
+/* 限定暗色主题下的高亮样式仅应用于代码块内部，避免影响表格/段落中的行内代码 */
+body[data-theme='dark'] .markdown-body pre .hljs {
+  background: transparent;
   color: #c9d1d9;
 }
