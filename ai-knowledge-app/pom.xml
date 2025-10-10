@@ -12,19 +12,14 @@
     <packaging>jar</packaging>
 
     <dependencies>
-        <!-- Internal Modules -->
         <dependency>
             <groupId>com.lcx</groupId>
             <artifactId>ai-knowledge-trigger</artifactId>
         </dependency>
-
-        <!-- JSON Processing -->
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>fastjson</artifactId>
         </dependency>
-
-        <!-- Spring Boot Starters -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter</artifactId>
@@ -33,15 +28,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
-
-        <!-- Test Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-
-        <!-- Lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
@@ -50,7 +41,7 @@
     </dependencies>
 
     <build>
-        <finalName>ai-rag-knowledge-app</finalName>
+        <finalName>ai-knowledge-base</finalName>
 
         <resources>
             <resource>

@@ -1,5 +1,6 @@
 .trae/
 **/git-cloned-repo/
+/docs/dev-ops/run.bat
 !**/src/main/**/target/
 !**/src/test/**/target/
 
