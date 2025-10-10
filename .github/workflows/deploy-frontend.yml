@@ -1,0 +1,155 @@
+name: 部署前端到服务器
+
+# 触发条件：仅当 frontend 目录有变化时
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'  # 仅监听 frontend 目录
+      - '.github/workflows/deploy-frontend.yml'  # 监听自身变化
+  
+  # 允许手动触发
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: '部署环境'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+        default: 'staging'
+
+jobs:
+  deploy-frontend:
+    runs-on: ubuntu-latest
+    environment: pro  # 使用 pro 环境的 secrets
+    
+    steps:
+      # 步骤 1: 检出代码
+      - name: 检出代码
+        uses: actions/checkout@v4
+      
+      # 步骤 2: 设置 Node.js 环境
+      - name: 设置 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+      
+      # 步骤 3: 安装依赖
+      - name: 安装依赖
+        working-directory: ./frontend
+        run: npm ci
+      
+      # 步骤 4: 运行测试
+      - name: 运行测试
+        working-directory: ./frontend
+        run: npm test
+      
+      # 步骤 5: 构建生产版本
+      - name: 构建前端
+        working-directory: ./frontend
+        run: npm run build
+      
+      # 步骤 6: 显示构建产物
+      - name: 显示构建产物
+        working-directory: ./frontend
+        run: |
+          echo "构建完成！产物列表："
+          ls -lah dist/
+          du -sh dist/
+      
+      # 步骤 7: 压缩构建产物（可选，加快传输）
+      - name: 压缩构建产物
+        working-directory: ./frontend
+        run: |
+          tar -czf dist.tar.gz dist/
+          ls -lh dist.tar.gz
+      
+      # 步骤 8: 通过 SSH 部署到服务器
+      - name: 部署到服务器
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.FRONTEND_SERVER_HOST }}
+          username: ${{ secrets.FRONTEND_SERVER_USERNAME }}
+          key: ${{ secrets.FRONTEND_SERVER_SSH_KEY }}
+          port: ${{ secrets.FRONTEND_SERVER_PORT || 22 }}
+          source: "frontend/dist.tar.gz"
+          target: ${{ secrets.FRONTEND_DEPLOY_DIR }}
+          strip_components: 1
+      
+      # 步骤 9: 在服务器上解压并部署
+      - name: 解压并部署到目标目录
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.FRONTEND_SERVER_HOST }}
+          username: ${{ secrets.FRONTEND_SERVER_USERNAME }}
+          key: ${{ secrets.FRONTEND_SERVER_SSH_KEY }}
+          port: ${{ secrets.FRONTEND_SERVER_PORT || 22 }}
+          script: |
+            # 设置目标部署目录
+            DEPLOY_DIR="${{ secrets.FRONTEND_DEPLOY_DIR }}"
+            TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+            
+            echo "=== 开始部署前端 ==="
+            echo "部署目录: ${DEPLOY_DIR}"
+            
+            # 进入部署目录
+            cd "${DEPLOY_DIR}"
+            
+            # 创建 html 目录（如果不存在）
+            mkdir -p html
+            
+            # 解压新版本到 html 目录
+            echo "解压新版本到 html 目录..."
+            tar -xzf dist.tar.gz
+            
+            # 删除 html 目录内容并复制新文件
+            echo "部署新文件..."
+            rm -rf html/*
+            cp -r dist/* html/
+            
+            # 删除解压的临时 dist 目录
+            rm -rf dist
+            
+            # 重命名压缩文件，添加时间戳后缀
+            echo "保存压缩文件: dist_${TIMESTAMP}.tar.gz"
+            mv dist.tar.gz dist_${TIMESTAMP}.tar.gz
+            
+            # 设置权限
+            echo "设置文件权限..."
+            chown -R www-data:www-data html/ || true
+            chmod -R 755 html/
+            
+            echo "=== 部署完成！ ==="
+            echo "当前部署目录内容："
+            ls -lah "${DEPLOY_DIR}"
+            echo ""
+            echo "html 目录内容："
+            ls -lah "${DEPLOY_DIR}/html"
+      
+      # 步骤 10: 验证部署（可选）
+      - name: 验证部署
+        run: |
+          echo "验证部署..."
+          # 检查服务器响应（如果有域名）
+          # curl -f https://your-domain.com || exit 1
+          echo "✅ 部署验证通过"
+      
+      # 步骤 11: 发送通知（可选）
+      - name: 部署成功通知
+        if: success()
+        run: |
+          echo "🎉 前端部署成功！"
+          echo "部署时间: $(date)"
+          echo "提交信息: ${{ github.event.head_commit.message }}"
+      
+      - name: 部署失败通知
+        if: failure()
+        run: |
+          echo "❌ 前端部署失败！"
+          echo "请检查日志并修复问题"
+
