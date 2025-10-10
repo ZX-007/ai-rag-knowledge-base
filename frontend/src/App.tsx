@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Space, Divider, ConfigProvider, theme as antdTheme, App as AntdApp } from 'antd';
 import { v4 as uuidv4 } from 'uuid';
 import { Message, AppState } from './types';
@@ -32,6 +32,12 @@ const App: React.FC = () => {
     ragTags: false
   });
 
+  // 使用 ref 来防止重复初始化
+  const isInitializedRef = useRef(false);
+  
+  // 用于中断流式请求的 AbortController
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   /** 当前主题模式（默认从 localStorage 读取） */
   const [theme, setTheme] = useState<ThemeMode>(() => {
     const saved = localStorage.getItem('theme');
@@ -62,7 +68,7 @@ const App: React.FC = () => {
     } finally {
       setLoading(prev => ({ ...prev, models: false }));
     }
-  }, []);
+  }, [messageApi]);
 
   // 加载RAG标签
   const loadRagTags = useCallback(async () => {
@@ -75,13 +81,18 @@ const App: React.FC = () => {
     } finally {
       setLoading(prev => ({ ...prev, ragTags: false }));
     }
-  }, []);
+  }, [messageApi]);
 
-  // 初始化加载数据
+  // 初始化加载数据（仅在组件挂载时执行一次，使用 ref 防止 StrictMode 重复调用）
   useEffect(() => {
+    if (isInitializedRef.current) {
+      return;
+    }
+    isInitializedRef.current = true;
     loadModels();
     loadRagTags();
-  }, [loadModels, loadRagTags]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // 发送消息
   const handleSendMessage = useCallback(async (messageContent: string) => {
@@ -116,17 +127,20 @@ const App: React.FC = () => {
     }));
 
     try {
+      // 创建新的 AbortController
+      abortControllerRef.current = new AbortController();
+      
       // 选择流式聊天方法
       const streamGenerator = state.selectedRagTag
         ? ApiService.streamRagChat({
             model: state.selectedModel,
             message: messageContent,
             ragTag: state.selectedRagTag
-          })
+          }, abortControllerRef.current.signal)
         : ApiService.streamChat({
             model: state.selectedModel,
             message: messageContent
-          });
+          }, abortControllerRef.current.signal);
 
       let fullContent = '';
       let fullThinkingContent = '';
@@ -180,17 +194,43 @@ const App: React.FC = () => {
       }));
 
     } catch (error) {
-      messageApi.open({ type: 'error', content: `发送消息失败: ${error instanceof Error ? error.message : '未知错误'}` });
-      
-      // 移除失败的AI消息
-      setState(prev => ({
-        ...prev,
-        messages: prev.messages.filter(msg => msg.id !== assistantMessage.id),
-        isStreaming: false,
-        currentStreamingMessageId: null
-      }));
+      // 检查是否是用户主动中断
+      if (error instanceof Error && error.name === 'AbortError') {
+        messageApi.open({ type: 'warning', content: '已终止生成' });
+        // 保留已生成的内容，标记为非流式状态
+        setState(prev => ({
+          ...prev,
+          isStreaming: false,
+          currentStreamingMessageId: null,
+          messages: prev.messages.map(msg =>
+            msg.id === assistantMessage.id
+              ? { ...msg, streaming: false }
+              : msg
+          )
+        }));
+      } else {
+        messageApi.open({ type: 'error', content: `发送消息失败: ${error instanceof Error ? error.message : '未知错误'}` });
+        
+        // 移除失败的AI消息
+        setState(prev => ({
+          ...prev,
+          messages: prev.messages.filter(msg => msg.id !== assistantMessage.id),
+          isStreaming: false,
+          currentStreamingMessageId: null
+        }));
+      }
+    } finally {
+      // 清理 AbortController
+      abortControllerRef.current = null;
     }
   }, [state.selectedModel, state.selectedRagTag, messageApi]);
+
+  // 终止当前流式生成
+  const handleStopStreaming = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  }, []);
 
   // 模型选择变化
   const handleModelChange = useCallback((model: string) => {
@@ -279,13 +319,15 @@ const App: React.FC = () => {
             <div className="input-container">
               <MessageInput
                 onSendMessage={handleSendMessage}
-                disabled={state.isStreaming || !state.selectedModel}
+                onStopStreaming={handleStopStreaming}
+                disabled={!state.selectedModel}
+                isStreaming={state.isStreaming}
                 placeholder={
                   !state.selectedModel 
-                    ? "请先选择AI模型..." 
+                    ? "请先选择AI模型" 
                     : state.selectedRagTag 
-                      ? `向知识库 "${state.selectedRagTag}" 提问...`
-                      : "请输入您的问题..."
+                      ? `向知识库 "${state.selectedRagTag}" 提问`
+                      : "在此处提问"
                 }
               />
             </div>

@@ -93,7 +93,7 @@ export class ApiService {
   /**
    * 流式聊天（使用统一解析器）
    */
-  static async *streamChat(request: ChatRequest): AsyncGenerator<{content: string, thinking?: string}, void, unknown> {
+  static async *streamChat(request: ChatRequest, abortSignal?: AbortSignal): AsyncGenerator<{content: string, thinking?: string}, void, unknown> {
     const response = await fetch(`${API_BASE_URL}/chat/generate_stream`, {
       method: 'POST',
       headers: {
@@ -101,6 +101,7 @@ export class ApiService {
         'Accept': 'text/event-stream',
       },
       body: JSON.stringify(request),
+      signal: abortSignal,
     });
 
     if (!response.ok) {
@@ -171,7 +172,7 @@ export class ApiService {
   /**
    * RAG流式聊天（使用统一解析器）
    */
-  static async *streamRagChat(request: RagChatRequest): AsyncGenerator<{content: string, thinking?: string}, void, unknown> {
+  static async *streamRagChat(request: RagChatRequest, abortSignal?: AbortSignal): AsyncGenerator<{content: string, thinking?: string}, void, unknown> {
     const response = await fetch(`${API_BASE_URL}/chat/generate_stream_rag`, {
       method: 'POST',
       headers: {
@@ -179,6 +180,7 @@ export class ApiService {
         'Accept': 'text/event-stream',
       },
       body: JSON.stringify(request),
+      signal: abortSignal,
     });
 
     if (!response.ok) {

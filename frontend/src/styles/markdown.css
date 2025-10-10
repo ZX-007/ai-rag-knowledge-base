@@ -127,17 +127,23 @@
 
 /* 深色主题下的代码块优化 */
 body[data-theme='dark'] .markdown-body pre {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: #1e1e1e !important;
+  border-color: #404040 !important;
 }
 
 body[data-theme='dark'] .markdown-body pre code {
-  color: rgba(255, 255, 255, 0.9);
+  color: #e8e8e8 !important;
 }
 
 body[data-theme='dark'] .markdown-body code {
-  background: rgba(128, 128, 128, 0.2);
-  border-color: rgba(128, 128, 128, 0.3);
+  background: rgba(128, 128, 128, 0.3);
+  border-color: rgba(128, 128, 128, 0.4);
+  color: #e8e8e8 !important;
+}
+
+/* 深色主题下代码高亮文字颜色 */
+body[data-theme='dark'] .markdown-body pre .hljs {
+  color: #e8e8e8 !important;
 }
 
 /* 表格样式 */

@@ -1,6 +1,16 @@
-import React, { useEffect, useRef } from 'react';
-import { Collapse, Space, Typography } from 'antd';
-import { ThunderboltOutlined } from '@ant-design/icons';
+import React, { useEffect, useRef, useState } from 'react';
+import { Collapse, Space, Typography, Button, message as antMessage, Tooltip } from 'antd';
+import { 
+  ThunderboltOutlined, 
+  CopyOutlined, 
+  LikeOutlined,
+  LikeFilled,
+  DislikeOutlined,
+  DislikeFilled,
+  ShareAltOutlined,
+  ReloadOutlined,
+  MoreOutlined 
+} from '@ant-design/icons';
 import { Message } from '../types';
 import MarkdownText from './MarkdownText';
 import ThinkingTimer from './ThinkingTimer';
@@ -23,6 +33,8 @@ const MessageList: React.FC<MessageListProps> = ({
   currentStreamingMessageId 
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  // 跟踪每个消息的反馈状态：'like' | 'dislike' | null
+  const [messageFeedback, setMessageFeedback] = useState<Record<string, 'like' | 'dislike' | null>>({});
 
   // 自动滚动到底部
   const scrollToBottom = () => {
@@ -32,6 +44,32 @@ const MessageList: React.FC<MessageListProps> = ({
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // 复制消息内容
+  const handleCopy = async (content: string) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      antMessage.success('已复制到剪贴板');
+    } catch (err) {
+      antMessage.error('复制失败');
+    }
+  };
+
+  // 处理点赞
+  const handleLike = (messageId: string) => {
+    setMessageFeedback(prev => ({
+      ...prev,
+      [messageId]: prev[messageId] === 'like' ? null : 'like'
+    }));
+  };
+
+  // 处理点踩
+  const handleDislike = (messageId: string) => {
+    setMessageFeedback(prev => ({
+      ...prev,
+      [messageId]: prev[messageId] === 'dislike' ? null : 'dislike'
+    }));
+  };
 
   return (
     <div className="chat-messages">
@@ -100,12 +138,81 @@ const MessageList: React.FC<MessageListProps> = ({
                   isStreaming={message.id === currentStreamingMessageId && isStreaming && !message.thinkingContent}
                 />
               </div>
+              
+              {/* AI 消息操作按钮 - 只在非流式状态显示 */}
+              {!message.streaming && message.content && (
+                <div className="ai-message-actions">
+                  <Tooltip title="复制" placement="bottom">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<CopyOutlined />}
+                      onClick={() => handleCopy(message.content)}
+                      className="action-button"
+                    />
+                  </Tooltip>
+                  <Tooltip title="赞同" placement="bottom">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={messageFeedback[message.id] === 'like' ? <LikeFilled /> : <LikeOutlined />}
+                      onClick={() => handleLike(message.id)}
+                      className={`action-button ${messageFeedback[message.id] === 'like' ? 'active-like' : ''}`}
+                    />
+                  </Tooltip>
+                  <Tooltip title="反对" placement="bottom">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={messageFeedback[message.id] === 'dislike' ? <DislikeFilled /> : <DislikeOutlined />}
+                      onClick={() => handleDislike(message.id)}
+                      className={`action-button ${messageFeedback[message.id] === 'dislike' ? 'active-dislike' : ''}`}
+                    />
+                  </Tooltip>
+                  <Tooltip title="分享" placement="bottom">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<ShareAltOutlined />}
+                      className="action-button"
+                    />
+                  </Tooltip>
+                  <Tooltip title="重新生成" placement="bottom">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<ReloadOutlined />}
+                      className="action-button"
+                    />
+                  </Tooltip>
+                  <Tooltip title="更多" placement="bottom">
+                    <Button
+                      type="text"
+                      size="small"
+                      icon={<MoreOutlined />}
+                      className="action-button"
+                    />
+                  </Tooltip>
+                </div>
+              )}
             </div>
           ) : (
             // 用户消息 - 灰色框，靠右，纯文本显示
             <div className="user-message-wrapper">
-              <div className="user-message-box">
-                {message.content}
+              <div className="user-message-container">
+                <div className="user-message-box">
+                  {message.content}
+                </div>
+                <div className="message-actions">
+                  <Button
+                    size="small"
+                    icon={<CopyOutlined />}
+                    onClick={() => handleCopy(message.content)}
+                    className="copy-button"
+                  >
+                    复制
+                  </Button>
+                </div>
               </div>
             </div>
           )}

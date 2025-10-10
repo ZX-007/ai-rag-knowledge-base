@@ -115,7 +115,8 @@ body[data-theme='dark'] .empty-state-subtitle {
 
 #root {
   height: 100vh;
-  width: 100vw;
+  width: 100%;
+  overflow: hidden;
 }
 
 /* 默认（浅色）主题变量 */
@@ -139,6 +140,7 @@ body[data-theme='dark'] .empty-state-subtitle {
   flex-direction: column;
   background: var(--ant-colorBgLayout, #ffffff);
   overflow: hidden;
+  position: relative;
 }
 
 /* 统一 div 文本颜色，确保随主题切换反转 */
@@ -151,10 +153,13 @@ body[data-theme='dark'] .empty-state-subtitle {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
+  /* 不使用 right: 0，而是明确设置宽度，为滚动条留出空间 */
+  width: calc(100vw - 20px); /* 为滚动条预留 20px 空间 */
+  max-width: calc(100vw - 20px);
   z-index: 100;
   background: var(--ant-colorBgContainer, #ffffff);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
 }
 
 .chat-header {
@@ -181,7 +186,8 @@ body[data-theme='dark'] .empty-state-subtitle {
   flex-direction: column;
   padding-top: 140px; /* 为固定顶部栏留出空间 */
   /* 将滚动条移至页面最右侧：在外层容器滚动 */
-  overflow-y: auto;
+  overflow-y: scroll;
+  overflow-x: hidden;
 }
 
 .chat-content-container {
@@ -266,56 +272,171 @@ body[data-theme='dark'] .empty-state-subtitle {
   box-shadow: 0 0 0 2px var(--ant-colorPrimaryBorderHover, rgba(64, 150, 255, 0.35)) !important;
 }
 
-/* 底部输入框主题适配 */
-.chat-input-area .ant-input,
-.chat-input-area .ant-input-textarea,
-.chat-input-area .ant-input-textarea textarea {
-  background: var(--ant-colorBgContainer) !important;
-  color: var(--ant-colorText) !important;
-  border-color: var(--ant-colorBorder) !important;
-  border-radius: 32px !important; /* 更大的胶囊圆角 */
-}
-.chat-input-area .ant-input::placeholder,
-.chat-input-area .ant-input-textarea textarea::placeholder {
-  color: var(--ant-colorTextTertiary) !important;
-}
-.chat-input-area .ant-input:focus,
-.chat-input-area .ant-input-focused,
-.chat-input-area .ant-input-textarea:focus-within {
-  border-color: var(--ant-colorPrimary) !important;
-  box-shadow: 0 0 0 2px var(--ant-colorPrimaryBorderHover, rgba(64, 150, 255, 0.35)) !important;
+/* 底部输入框主题适配 - 完整胶囊设计 */
+.chat-input-area {
+  width: 100%;
 }
 
-/* 放大输入框整体尺寸（类似第二张图）*/
-.chat-input-area .ant-input-textarea {
-  padding: 4px !important; /* 外层留白，便于更圆润 */
+/* 统一的输入容器 - 完整胶囊形状 */
+.chat-input-area .unified-input-container {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border: 1px solid #d9d9d9;
+  border-radius: 50px;
+  padding: 4px;
+  min-height: 56px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.chat-input-area .ant-input-textarea textarea {
-  min-height: 48px !important; /* 提高默认高度 */
-  padding: 14px 18px !important; /* 增加内边距以获得更厚的胶囊感 */
-  font-size: 16px !important;
+
+.chat-input-area .unified-input-container:focus-within {
+  border-color: #1677ff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.1);
+}
+
+/* 左侧圆形加号按钮区域 - 浅色主题 */
+.chat-input-area .left-circle-button {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b7280;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  background: transparent;
+}
+
+.chat-input-area .left-circle-button:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: #1f2937;
+}
+
+/* 中间输入框 */
+.chat-input-area .unified-textarea.ant-input-textarea {
+  flex: 1;
+  background: transparent !important;
+  border: none !important;
+}
+
+.chat-input-area .unified-textarea .ant-input {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 12px 16px !important;
+  font-size: 15px !important;
   line-height: 1.5 !important;
+  color: #1f2937 !important;
+  resize: none !important;
 }
 
-/* 深色主题下的输入框颜色，按截图调整 */
-body[data-theme='dark'] .chat-input-area .ant-input-textarea,
-body[data-theme='dark'] .chat-input-area .ant-input-textarea textarea {
-  background: #2b2b2b !important; /* 深灰胶囊背景 */
-  color: rgba(255, 255, 255, 0.9) !important;
-  border-color: #3a3a3a !important; /* 更深的边框 */
-  border-radius: 32px !important;
-}
-body[data-theme='dark'] .chat-input-area .ant-input-textarea textarea::placeholder {
+.chat-input-area .unified-textarea .ant-input::placeholder {
   color: #9ca3af !important;
 }
-body[data-theme='dark'] .chat-input-area .ant-input-textarea:focus-within {
-  border-color: var(--ant-colorPrimary) !important;
-  box-shadow: 0 0 0 2px rgba(64, 150, 255, 0.2) !important; /* 细微的蓝色聚焦光晕 */
+
+.chat-input-area .unified-textarea .ant-input:focus {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+/* 右侧圆形发送/终止按钮区域 */
+.chat-input-area .right-circle-button {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  background: #1677ff;
+  color: #ffffff;
+}
+
+.chat-input-area .right-circle-button:hover:not(.disabled) {
+  transform: scale(1.05);
+  background: #4096ff;
+}
+
+.chat-input-area .right-circle-button.disabled {
+  background: #d9d9d9;
+  color: rgba(0, 0, 0, 0.25);
+  cursor: not-allowed;
+}
+
+.chat-input-area .right-circle-button.streaming {
+  background: #ff4d4f;
+  color: #ffffff;
+}
+
+.chat-input-area .right-circle-button.streaming:hover {
+  background: #ff7875;
+}
+
+/* 深色主题下的样式 */
+body[data-theme='dark'] .chat-input-area .unified-input-container {
+  background: #2b2b2b;
+  border-color: #3a3a3a;
+}
+
+body[data-theme='dark'] .chat-input-area .unified-input-container:focus-within {
+  border-color: #1677ff;
+  box-shadow: 0 0 0 2px rgba(22, 119, 255, 0.2);
+}
+
+body[data-theme='dark'] .chat-input-area .left-circle-button {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+body[data-theme='dark'] .chat-input-area .left-circle-button:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+body[data-theme='dark'] .chat-input-area .unified-textarea .ant-input {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+body[data-theme='dark'] .chat-input-area .unified-textarea .ant-input::placeholder {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+body[data-theme='dark'] .chat-input-area .right-circle-button {
+  background: #1677ff;
+}
+
+body[data-theme='dark'] .chat-input-area .right-circle-button:hover:not(.disabled) {
+  background: #4096ff;
+}
+
+body[data-theme='dark'] .chat-input-area .right-circle-button.disabled {
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.25);
+}
+
+body[data-theme='dark'] .chat-input-area .right-circle-button.streaming {
+  background: #ff4d4f;
+}
+
+body[data-theme='dark'] .chat-input-area .right-circle-button.streaming:hover {
+  background: #ff7875;
 }
 
 .message-item {
   margin-bottom: 32px;
   animation: messageSlideIn 0.3s ease-out;
+}
+
+/* 用户消息项额外预留空间给复制按钮 */
+.message-item.message-user {
+  margin-bottom: 68px; /* 32px + 36px(按钮高度8px+28px) */
 }
 
 @keyframes messageSlideIn {
@@ -349,6 +470,63 @@ body[data-theme='dark'] .chat-input-area .ant-input-textarea:focus-within {
   font-size: 15px;
   line-height: 1.8;
   color: var(--ant-colorText);
+}
+
+/* AI 消息操作按钮 */
+.ai-message-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: 12px;
+  padding-top: 8px;
+}
+
+.ai-message-actions .action-button {
+  color: var(--ant-colorTextSecondary, #666) !important;
+  padding: 4px 8px !important;
+  height: auto !important;
+  font-size: 16px !important;
+  transition: all 0.2s ease;
+}
+
+.ai-message-actions .action-button:hover {
+  color: var(--ant-colorText, #000) !important;
+  background: var(--ant-colorBgTextHover, rgba(0, 0, 0, 0.04)) !important;
+}
+
+/* 赞同按钮激活状态 */
+.ai-message-actions .action-button.active-like {
+  color: #1677ff !important;
+}
+
+.ai-message-actions .action-button.active-like:hover {
+  color: #4096ff !important;
+}
+
+/* 反对按钮激活状态 */
+.ai-message-actions .action-button.active-dislike {
+  color: #ff4d4f !important;
+}
+
+.ai-message-actions .action-button.active-dislike:hover {
+  color: #ff7875 !important;
+}
+
+/* 深色主题下的 AI 操作按钮 */
+body[data-theme='dark'] .ai-message-actions .action-button {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+body[data-theme='dark'] .ai-message-actions .action-button:hover {
+  color: rgba(255, 255, 255, 0.85) !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+body[data-theme='dark'] .ai-message-actions .action-button.active-like {
+  color: #4096ff !important;
+}
+
+body[data-theme='dark'] .ai-message-actions .action-button.active-dislike {
+  color: #ff7875 !important;
 }
 
 /* 思考过程区域 */
@@ -404,6 +582,16 @@ body[data-theme='dark'] .chat-input-area .ant-input-textarea:focus-within {
 .user-message-wrapper {
   display: flex;
   justify-content: flex-end;
+  position: relative;
+  /* 确保复制按钮不影响布局 */
+}
+
+.user-message-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  max-width: 100%;
+  position: relative;
 }
 
 .user-message-box {
@@ -411,21 +599,93 @@ body[data-theme='dark'] .chat-input-area .ant-input-textarea:focus-within {
   border: 1px solid rgba(128, 128, 128, 0.25);
   border-radius: 12px;
   padding: 12px 16px;
-  max-width: 70%;
-  min-width: fit-content;
-  word-break: keep-all;
-  overflow-wrap: anywhere;
-  white-space: normal;
+  /* 宽度自适应内容，但不超过容器（60%） */
+  width: fit-content;
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
   font-size: 15px;
   line-height: 1.6;
   color: var(--ant-colorText);
   display: inline-block;
+  transition: all 0.2s ease;
+}
+
+.user-message-wrapper:hover .user-message-box {
+  background: rgba(128, 128, 128, 0.2);
+  border-color: rgba(128, 128, 128, 0.35);
+}
+
+/* 消息操作按钮容器 */
+.message-actions {
+  position: absolute;
+  bottom: -36px; /* 定位到消息框下方预留空间内 */
+  right: 0;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* 悬停在整个用户消息容器时显示复制按钮 */
+.user-message-container:hover .message-actions {
+  opacity: 1;
+  visibility: visible;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 复制按钮样式 */
+.copy-button {
+  background: var(--ant-colorBgContainer, #ffffff) !important;
+  border: 1px solid var(--ant-colorBorder, #d9d9d9) !important;
+  color: var(--ant-colorText, #000000) !important;
+  font-size: 12px !important;
+  height: 28px !important;
+  padding: 0 12px !important;
+  border-radius: 6px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+  transition: all 0.2s ease;
+}
+
+.copy-button:hover {
+  border-color: var(--ant-colorPrimary, #1677ff) !important;
+  color: var(--ant-colorPrimary, #1677ff) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 /* 深色主题下的用户消息框 */
 body[data-theme='dark'] .user-message-box {
   background: rgba(128, 128, 128, 0.2);
   border-color: rgba(128, 128, 128, 0.3);
+}
+
+body[data-theme='dark'] .user-message-wrapper:hover .user-message-box {
+  background: rgba(128, 128, 128, 0.3);
+  border-color: rgba(128, 128, 128, 0.4);
+}
+
+body[data-theme='dark'] .copy-button {
+  background: #2b2b2b !important;
+  border-color: #3a3a3a !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+body[data-theme='dark'] .copy-button:hover {
+  border-color: var(--ant-colorPrimary, #1677ff) !important;
+  color: var(--ant-colorPrimary, #1677ff) !important;
 }
 
 .streaming-cursor {
@@ -461,19 +721,31 @@ body[data-theme='dark'] .user-message-box {
 /* ================= Markdown 暗色主题适配 ================= */
 /* 深色主题下的 Markdown 样式优化（颜色已通过继承处理） */
 body[data-theme='dark'] .markdown-body blockquote {
-  border-left-color: #334155;
-  background: #0f172a;
-  color: #cbd5e1;
+  border-left-color: #404040;
+  background: #2a2a2a;
+  color: #d4d4d4;
 }
+
+/* 深色主题代码块样式统一在 markdown.css 中管理，此处确保不冲突 */
 body[data-theme='dark'] .markdown-body pre {
-  background: #0d1117;
-  border-color: #1f2937;
+  background: #1e1e1e !important;
+  border-color: #404040 !important;
 }
+
+body[data-theme='dark'] .markdown-body pre code,
 body[data-theme='dark'] .markdown-body code {
-  background: #0d1117;
+  color: #e8e8e8 !important;
 }
-/* 限定暗色主题下的高亮样式仅应用于代码块内部，避免影响表格/段落中的行内代码 */
-body[data-theme='dark'] .markdown-body pre .hljs {
-  background: transparent;
-  color: #c9d1d9;
+
+/* 代码高亮库的通用样式 */
+body[data-theme='dark'] .markdown-body pre .hljs,
+body[data-theme='dark'] .markdown-body .hljs {
+  background: transparent !important;
+  color: #e8e8e8 !important;
+}
+
+/* 确保所有代码块内的文本都清晰可见 */
+body[data-theme='dark'] .markdown-body pre *,
+body[data-theme='dark'] .markdown-body code * {
+  color: inherit !important;
 }
