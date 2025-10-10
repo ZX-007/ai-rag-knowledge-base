@@ -39,6 +39,9 @@ redis:
 # In the production environment, the root log level is set to warn to reduce the amount of log output.
 # If you need to troubleshoot a specific module, you can set the log level of the corresponding package to debug.
 logging:
+#  # 生产环境：使用标准日志目录
+#  file:
+#    path: /var/log/ai-knowledge-app
   level:
     root: warn
     org.springframework: warn
