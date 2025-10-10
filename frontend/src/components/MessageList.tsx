@@ -45,11 +45,37 @@ const MessageList: React.FC<MessageListProps> = ({
     scrollToBottom();
   }, [messages]);
 
-  // 复制消息内容
+  // 复制消息内容（支持降级方案）
   const handleCopy = async (content: string) => {
     try {
-      await navigator.clipboard.writeText(content);
-      antMessage.success('已复制到剪贴板');
+      // 尝试使用现代 Clipboard API
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(content);
+        antMessage.success('已复制到剪贴板');
+      } else {
+        // 降级方案：使用传统的 execCommand 方法
+        const textArea = document.createElement('textarea');
+        textArea.value = content;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+          const successful = document.execCommand('copy');
+          if (successful) {
+            antMessage.success('已复制到剪贴板');
+          } else {
+            antMessage.error('复制失败');
+          }
+        } catch (err) {
+          antMessage.error('复制失败');
+        } finally {
+          document.body.removeChild(textArea);
+        }
+      }
     } catch (err) {
       antMessage.error('复制失败');
     }

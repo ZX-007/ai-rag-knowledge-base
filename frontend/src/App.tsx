@@ -3,6 +3,7 @@ import { Space, Divider, ConfigProvider, theme as antdTheme, App as AntdApp } fr
 import { v4 as uuidv4 } from 'uuid';
 import { Message, AppState } from './types';
 import { ApiService } from './services/api';
+import { parseError, logError } from './utils/errorHandler';
 import MessageList from './components/MessageList';
 import MessageInput from './components/MessageInput';
 import ModelSelector from './components/ModelSelector';
@@ -64,7 +65,9 @@ const App: React.FC = () => {
         selectedModel: models.length > 0 ? models[0] : ''
       }));
     } catch (error) {
-      messageApi.open({ type: 'error', content: `加载模型列表失败: ${error instanceof Error ? error.message : '未知错误'}` });
+      logError(error, 'loadModels');
+      const { message: errorMessage } = parseError(error);
+      messageApi.open({ type: 'error', content: `加载模型列表失败: ${errorMessage}` });
     } finally {
       setLoading(prev => ({ ...prev, models: false }));
     }
@@ -77,7 +80,9 @@ const App: React.FC = () => {
       const ragTags = await ApiService.getRagTags();
       setState(prev => ({ ...prev, ragTags }));
     } catch (error) {
-      messageApi.open({ type: 'error', content: `加载RAG标签失败: ${error instanceof Error ? error.message : '未知错误'}` });
+      logError(error, 'loadRagTags');
+      const { message: errorMessage } = parseError(error);
+      messageApi.open({ type: 'error', content: `加载RAG标签失败: ${errorMessage}` });
     } finally {
       setLoading(prev => ({ ...prev, ragTags: false }));
     }
@@ -93,6 +98,18 @@ const App: React.FC = () => {
     loadRagTags();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 清空对话
+  const handleClearMessages = useCallback(() => {
+    setState(prev => ({ ...prev, messages: [] }));
+    messageApi.open({ type: 'success', content: '对话已清空' });
+  }, [messageApi]);
+
+  // 附加文件（触发文件上传对话框）
+  const handleAttachFile = useCallback(() => {
+    // 可以在这里触发文件上传模态框
+    messageApi.open({ type: 'info', content: '请使用顶部的"上传文档"按钮上传文件到知识库' });
+  }, [messageApi]);
 
   // 发送消息
   const handleSendMessage = useCallback(async (messageContent: string) => {
@@ -209,7 +226,9 @@ const App: React.FC = () => {
           )
         }));
       } else {
-        messageApi.open({ type: 'error', content: `发送消息失败: ${error instanceof Error ? error.message : '未知错误'}` });
+        logError(error, 'handleSendMessage');
+        const { message: errorMessage } = parseError(error);
+        messageApi.open({ type: 'error', content: `发送消息失败: ${errorMessage}` });
         
         // 移除失败的AI消息
         setState(prev => ({
@@ -320,6 +339,8 @@ const App: React.FC = () => {
               <MessageInput
                 onSendMessage={handleSendMessage}
                 onStopStreaming={handleStopStreaming}
+                onClearMessages={handleClearMessages}
+                onAttachFile={handleAttachFile}
                 disabled={!state.selectedModel}
                 isStreaming={state.isStreaming}
                 placeholder={

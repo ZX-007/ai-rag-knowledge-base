@@ -1,5 +1,6 @@
 import { ApiResponse, ChatRequest, RagChatRequest, GitRepositoryRequest } from '../types';
 import { createStreamParser, parseSSELine } from '../utils/streamParser';
+import { createNetworkError, createApiError, logError } from '../utils/errorHandler';
 
 // 可通过环境变量配置 API 前缀与请求超时时间
 const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_PREFIX) ? import.meta.env.VITE_API_PREFIX : '/api/v1';
@@ -29,15 +30,23 @@ export class ApiService {
    * 查询可用模型列表
    */
   static async getAvailableModels(): Promise<string[]> {
-    const response = await withTimeout(`${API_BASE_URL}/chat/models`);
-    ensureOk(response);
-    const result: ApiResponse<string[]> = await response.json();
-    
-    if (!isSuccessCode(result.code)) {
-      throw new Error(result.info);
+    try {
+      const response = await withTimeout(`${API_BASE_URL}/chat/models`);
+      ensureOk(response);
+      const result: ApiResponse<string[]> = await response.json();
+      
+      if (!isSuccessCode(result.code)) {
+        throw createApiError(result.info);
+      }
+      
+      return result.data;
+    } catch (error) {
+      logError(error, 'getAvailableModels');
+      if (error instanceof Error && error.message.includes('fetch')) {
+        throw createNetworkError('无法连接到服务器，请检查后端服务是否正常运行', error);
+      }
+      throw error;
     }
-    
-    return result.data;
   }
 
   /**
@@ -74,20 +83,28 @@ export class ApiService {
    * @returns 后端返回的结果描述字符串
    */
   static async analyzeGitRepository(request: GitRepositoryRequest): Promise<string> {
-    const response = await withTimeout(`${API_BASE_URL}/rag/analyze_git_repository`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(request),
-    });
+    try {
+      const response = await withTimeout(`${API_BASE_URL}/rag/analyze_git_repository`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+      });
 
-    ensureOk(response);
-    const result: ApiResponse<string> = await response.json();
-    if (!isSuccessCode(result.code)) {
-      throw new Error(result.info);
+      ensureOk(response);
+      const result: ApiResponse<string> = await response.json();
+      if (!isSuccessCode(result.code)) {
+        throw createApiError(result.info);
+      }
+      return result.data;
+    } catch (error) {
+      logError(error, 'analyzeGitRepository');
+      if (error instanceof Error && error.message.includes('fetch')) {
+        throw createNetworkError('无法连接到服务器进行Git仓库分析', error);
+      }
+      throw error;
     }
-    return result.data;
   }
 
   /**
@@ -252,24 +269,32 @@ export class ApiService {
    * 上传文件到知识库
    */
   static async uploadFiles(ragTag: string, files: File[]): Promise<string> {
-    const formData = new FormData();
-    formData.append('ragTag', ragTag);
-    
-    files.forEach(file => {
-      formData.append('files', file);
-    });
+    try {
+      const formData = new FormData();
+      formData.append('ragTag', ragTag);
+      
+      files.forEach(file => {
+        formData.append('files', file);
+      });
 
-    const response = await fetch(`${API_BASE_URL}/rag/file/upload`, {
-      method: 'POST',
-      body: formData,
-    });
+      const response = await fetch(`${API_BASE_URL}/rag/file/upload`, {
+        method: 'POST',
+        body: formData,
+      });
 
-    const result: ApiResponse<string> = await response.json();
-    
-    if (!isSuccessCode(result.code)) {
-      throw new Error(result.info);
+      const result: ApiResponse<string> = await response.json();
+      
+      if (!isSuccessCode(result.code)) {
+        throw createApiError(result.info);
+      }
+      
+      return result.data;
+    } catch (error) {
+      logError(error, 'uploadFiles');
+      if (error instanceof Error && error.message.includes('fetch')) {
+        throw createNetworkError('文件上传失败，请检查网络连接', error);
+      }
+      throw error;
     }
-    
-    return result.data;
   }
 }

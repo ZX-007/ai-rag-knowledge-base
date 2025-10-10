@@ -3,6 +3,7 @@ import { Button, Modal, Input, Space, Typography, App as AntdApp } from 'antd';
 import { GithubOutlined } from '@ant-design/icons';
 import { ApiService } from '../services/api';
 import type { GitRepositoryRequest } from '../types';
+import { parseError, logError } from '../utils/errorHandler';
 
 const { Text } = Typography;
 
@@ -74,7 +75,9 @@ const GitRepoAnalyze: React.FC<GitRepoAnalyzeProps> = ({ onAnalyzeSuccess }) => 
         onAnalyzeSuccess?.('');
       }
     } catch (e) {
-      messageApi.open({ type: 'error', content: `分析失败：${e instanceof Error ? e.message : '未知错误'}` });
+      logError(e, 'GitRepoAnalyze.handleAnalyze');
+      const { message: errorMessage } = parseError(e);
+      messageApi.open({ type: 'error', content: `分析失败: ${errorMessage}` });
     } finally {
       setSubmitting(false);
     }

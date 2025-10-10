@@ -44,13 +44,14 @@ interface MarkdownTextProps {
  * - 数学公式（LaTeX）：行内公式和块级公式
  * - 代码高亮：自动检测语言并高亮显示
  * - 自定义组件：优化链接、图片等元素的渲染
+ * - 使用 React.memo 优化性能，避免不必要的重渲染
  *
  * @param content Markdown 文本内容
  * @param isStreaming 是否处于流式状态（末尾显示闪烁光标）
  * @param className 可选的容器类名，用于覆盖默认样式
  * @returns 渲染后的 React 节点
  */
-const MarkdownText: React.FC<MarkdownTextProps> = ({ content, isStreaming = false, className }) => {
+const MarkdownText: React.FC<MarkdownTextProps> = React.memo(({ content, isStreaming = false, className }) => {
   return (
     <div className={`markdown-body ${className ?? ''}`}>
       <ReactMarkdown 
@@ -106,6 +107,8 @@ const MarkdownText: React.FC<MarkdownTextProps> = ({ content, isStreaming = fals
       {isStreaming && <span className="streaming-cursor" />}
     </div>
   );
-};
+});
+
+MarkdownText.displayName = 'MarkdownText';
 
 export default MarkdownText;

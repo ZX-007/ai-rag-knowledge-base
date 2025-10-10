@@ -3,6 +3,7 @@ import { Upload, Button, Modal, Input, Space, Typography, App as AntdApp } from 
 import { UploadOutlined, InboxOutlined } from '@ant-design/icons';
 import type { UploadProps, UploadFile } from 'antd';
 import { ApiService } from '../services/api';
+import { parseError, logError } from '../utils/errorHandler';
 
 const { Dragger } = Upload;
 const { Text } = Typography;
@@ -51,7 +52,9 @@ const FileUpload: React.FC<FileUploadProps> = ({ onUploadSuccess }) => {
       handleCancel();
       onUploadSuccess?.(ragTag.trim());
     } catch (error) {
-      messageApi.open({ type: 'error', content: `文件上传失败: ${error instanceof Error ? error.message : '未知错误'}` });
+      logError(error, 'FileUpload.handleUpload');
+      const { message: errorMessage } = parseError(error);
+      messageApi.open({ type: 'error', content: `文件上传失败: ${errorMessage}` });
     } finally {
       setUploading(false);
     }
