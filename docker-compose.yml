@@ -14,9 +14,6 @@ services:
       - DATASOURCE_DATABASE_NAME=ai-rag-knowledge-base
       - DATASOURCE_USERNAME=root
       - DATASOURCE_PASSWORD=root
-      - OLLAMA_BASE_URL=http://ollama:11434
-      - OLLAMA_CHAT_MODEL=deepseek-r1:1.5b
-      - OLLAMA_EMBEDDING_MODEL=nomic-embed-text
       - OPENAI_BASE_URL=http://host.docker.internal:1234
       - OPENAI_API_KEY=empty
       - OPENAI_CHAT_MODEL=deepseek-r1-distill-qwen-1.5b
@@ -25,29 +22,8 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=root
     depends_on:
-      - ollama
       - redis
       - pgvector
-    networks:
-      - network
-
-  ollama:
-    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/ollama:0.5.10
-    container_name: ollama
-    restart: unless-stopped
-    ports:
-      - "11434:11434"
-    volumes:
-      - /opt/llm/ollama/models:/root/.ollama/models
-    entrypoint:
-      - /bin/sh
-      - -c
-      - |
-        /bin/ollama serve & 
-        echo "Waiting 5 seconds for Ollama server startup..."
-        sleep 5
-        /bin/ollama run deepseek-r1:1.5b
-        wait
     networks:
       - network
 

@@ -8,6 +8,15 @@ services:
       - "11434:11434"
     volumes:
       - /opt/llm/ollama/models:/root/.ollama/models
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        /bin/ollama serve & 
+        echo "Waiting 5 seconds for Ollama server startup..."
+        sleep 5
+        /bin/ollama run deepseek-r1:1.5b
+        wait
     networks:
       - network
     # 对话模型：ollama run deepseek-r1:1.5b
