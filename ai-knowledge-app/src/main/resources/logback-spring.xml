@@ -1,113 +1,224 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 日志级别从低到高分为TRACE < DEBUG < INFO < WARN < ERROR < FATAL，如果设置为WARN，则低于WARN的信息都不会输出 -->
-<configuration scan="true" scanPeriod="10 seconds">
+<!--
+    企业级日志配置（Logback Spring版本）
+    
+    功能特性：
+    1. 支持异步日志记录，提升性能
+    2. 按日志级别分文件存储（INFO、WARN、ERROR）
+    3. 自动日志归档和压缩
+    4. MDC上下文信息记录（追踪ID、用户信息等）
+    5. 支持多环境配置（开发、生产）
+    6. 结构化日志输出
+    
+    日志级别：TRACE < DEBUG < INFO < WARN < ERROR
+-->
+<configuration scan="true" scanPeriod="60 seconds">
 
-    <contextName>logback</contextName>
-    <!-- name的值是变量的名称，value的值是变量定义的值。通过定义的值会被插入到logger上下文中。定义变量后，可以使“${}”来使用变量。 -->
-    <springProperty scope="context" name="log.path" source="logging.path"/>
-    <!-- 日志格式 -->
+    <contextName>ai-knowledge-app</contextName>
+    
+    <!-- 应用名称 -->
+    <property name="APP_NAME" value="ai-knowledge-app"/>
+    
+    <!-- 日志路径配置 -->
+    <springProperty scope="context" name="LOG_PATH" source="logging.path" defaultValue="./data/log"/>
+    
+    <!-- 日志格式配置 -->
     <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
-    <conversionRule conversionWord="wex"
-                    converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
-    <conversionRule conversionWord="wEx"
-                    converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
 
-    <!-- 输出到控制台 -->
+    <!-- 
+        控制台日志输出配置（带颜色）
+        企业级格式：时间戳 [线程] 级别 类名 [MDC上下文] | 日志消息
+        
+        颜色说明（Spring Boot自动根据日志级别设置）：
+        - ERROR: 红色（bold red）
+        - WARN:  黄色（yellow）
+        - INFO:  绿色（green）
+        - DEBUG: 青色（magenta）
+        - TRACE: 默认色
+    -->
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-        <!-- 此日志appender是为开发使用，只配置最底级别，控制台输出的日志级别是大于或等于此级别的日志信息 -->
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>info</level>
+            <level>DEBUG</level>
         </filter>
         <encoder>
-            <pattern>%d{yy-MM-dd.HH:mm:ss.SSS} [%-16t] %-5p %-22c{0}%X{ServiceId} -%X{trace-id} %m%n</pattern>
+            <pattern>%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr([%15.15t]){faint} %clr(%-5level) %clr(%-40.40logger{39}){cyan} %clr([){faint}trace=%X{traceId:-N/A} user=%X{userId:-N/A} ip=%X{clientIp:-N/A}%clr(]){faint} %clr(|){faint} %m%n%wEx</pattern>
             <charset>UTF-8</charset>
         </encoder>
     </appender>
 
-    <!--输出到文件-->
-    <!-- 时间滚动输出 level为 INFO 日志 -->
+    <!--
+        INFO级别日志文件输出配置
+        记录所有INFO及以上级别的日志（INFO、WARN、ERROR）
+    -->
     <appender name="INFO_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <!-- 正在记录的日志文件的路径及文件名 -->
-        <file>./data/log/log_info.log</file>
-        <!--日志文件输出格式-->
+        <file>${LOG_PATH}/info.log</file>
         <encoder>
-            <pattern>%d{yy-MM-dd.HH:mm:ss.SSS} [%-16t] %-5p %-22c{0}%X{ServiceId} -%X{trace-id} %m%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} [trace=%X{traceId:-N/A}|user=%X{userId:-N/A}|ip=%X{clientIp:-N/A}|module=%X{module:-N/A}|op=%X{operation:-N/A}] - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
-        <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <!-- 每天日志归档路径以及格式 -->
-            <fileNamePattern>./data/log/log-info-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${LOG_PATH}/archive/info-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>200MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>20GB</totalSizeCap>
+            <cleanHistoryOnStart>false</cleanHistoryOnStart>
+        </rollingPolicy>
+    </appender>
+
+    <!--
+        WARN级别日志文件输出配置
+        仅记录WARN级别的日志（不包括ERROR）
+    -->
+    <appender name="WARN_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/warn.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} [trace=%X{traceId:-N/A}|user=%X{userId:-N/A}|ip=%X{clientIp:-N/A}] - %msg%n%wEx</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/archive/warn-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>100MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
-            <!--日志文件保留天数-->
-            <maxHistory>15</maxHistory>
+            <maxHistory>30</maxHistory>
             <totalSizeCap>10GB</totalSizeCap>
         </rollingPolicy>
-    </appender>
-
-    <!-- 时间滚动输出 level为 ERROR 日志 -->
-    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <!-- 正在记录的日志文件的路径及文件名 -->
-        <file>./data/log/log_error.log</file>
-        <!--日志文件输出格式-->
-        <encoder>
-            <pattern>%d{yy-MM-dd.HH:mm:ss.SSS} [%-16t] %-5p %-22c{0}%X{ServiceId} -%X{trace-id} %m%n</pattern>
-            <charset>UTF-8</charset>
-        </encoder>
-        <!-- 日志记录器的滚动策略，按日期，按大小记录 -->
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>./data/log/log-error-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
-                <maxFileSize>100MB</maxFileSize>
-            </timeBasedFileNamingAndTriggeringPolicy>
-            <!-- 日志文件保留天数【根据服务器预留，可自行调整】 -->
-            <maxHistory>7</maxHistory>
-            <totalSizeCap>5GB</totalSizeCap>
-        </rollingPolicy>
-        <!-- WARN 级别及以上 -->
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+        <!-- 只记录WARN级别 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
             <level>WARN</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
         </filter>
     </appender>
 
-    <!-- 异步输出 -->
-    <appender name="ASYNC_FILE_INFO" class="ch.qos.logback.classic.AsyncAppender">
-        <!-- 队列剩余容量小于discardingThreshold,则会丢弃TRACT、DEBUG、INFO级别的日志;默认值-1,为queueSize的20%;0不丢失日志 -->
+    <!--
+        ERROR级别日志文件输出配置
+        仅记录ERROR级别的日志（包含完整堆栈）
+    -->
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/error.log</file>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} [trace=%X{traceId:-N/A}|user=%X{userId:-N/A}|ip=%X{clientIp:-N/A}] - %msg%n%wEx</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/archive/error-%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>100MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>90</maxHistory>
+            <totalSizeCap>20GB</totalSizeCap>
+        </rollingPolicy>
+        <!-- 只记录ERROR级别 -->
+        <filter class="ch.qos.logback.classic.filter.LevelFilter">
+            <level>ERROR</level>
+            <onMatch>ACCEPT</onMatch>
+            <onMismatch>DENY</onMismatch>
+        </filter>
+    </appender>
+
+    <!--
+        异步日志配置
+        使用异步appender提升性能，避免日志记录阻塞业务线程
+        
+        配置说明：
+        - discardingThreshold: 队列剩余容量阈值，0表示不丢弃日志
+        - queueSize: 异步队列大小
+        - neverBlock: true时不阻塞业务线程，但可能丢失日志
+        - includeCallerData: 是否包含调用者信息（影响性能）
+    -->
+    <appender name="ASYNC_INFO" class="ch.qos.logback.classic.AsyncAppender">
         <discardingThreshold>0</discardingThreshold>
-        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
-        <queueSize>8192</queueSize>
-        <!-- neverBlock:true 会丢失日志,但业务性能不受影响 -->
-        <neverBlock>true</neverBlock>
-        <!--是否提取调用者数据-->
+        <queueSize>10240</queueSize>
+        <neverBlock>false</neverBlock>
         <includeCallerData>false</includeCallerData>
         <appender-ref ref="INFO_FILE"/>
     </appender>
 
-    <appender name="ASYNC_FILE_ERROR" class="ch.qos.logback.classic.AsyncAppender">
-        <!-- 队列剩余容量小于discardingThreshold,则会丢弃TRACT、DEBUG、INFO级别的日志;默认值-1,为queueSize的20%;0不丢失日志 -->
+    <appender name="ASYNC_WARN" class="ch.qos.logback.classic.AsyncAppender">
         <discardingThreshold>0</discardingThreshold>
-        <!-- 更改默认的队列的深度,该值会影响性能.默认值为256 -->
-        <queueSize>1024</queueSize>
-        <!-- neverBlock:true 会丢失日志,但业务性能不受影响 -->
-        <neverBlock>true</neverBlock>
-        <!--是否提取调用者数据-->
+        <queueSize>2048</queueSize>
+        <neverBlock>false</neverBlock>
         <includeCallerData>false</includeCallerData>
+        <appender-ref ref="WARN_FILE"/>
+    </appender>
+
+    <appender name="ASYNC_ERROR" class="ch.qos.logback.classic.AsyncAppender">
+        <discardingThreshold>0</discardingThreshold>
+        <queueSize>2048</queueSize>
+        <neverBlock>false</neverBlock>
+        <includeCallerData>true</includeCallerData>
         <appender-ref ref="ERROR_FILE"/>
     </appender>
 
-    <!-- 开发环境：控制台打印 -->
+    <!--
+        环境特定配置
+        开发环境：输出详细的DEBUG日志到控制台
+        生产环境：只记录INFO及以上级别
+    -->
+    
+    <!-- 开发环境配置 -->
     <springProfile name="local">
-        <logger name="com.lcx" level="debug"/>
+        <logger name="com.lcx" level="DEBUG" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_INFO"/>
+            <appender-ref ref="ASYNC_WARN"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </logger>
+        
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_INFO"/>
+            <appender-ref ref="ASYNC_WARN"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </root>
     </springProfile>
 
-    <root level="info">
-        <appender-ref ref="CONSOLE"/>
-        <!-- 异步日志-INFO -->
-        <appender-ref ref="ASYNC_FILE_INFO"/>
-        <!-- 异步日志-ERROR -->
-        <appender-ref ref="ASYNC_FILE_ERROR"/>
-    </root>
+    <!-- 生产环境配置 -->
+    <springProfile name="pro">
+        <logger name="com.lcx" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_INFO"/>
+            <appender-ref ref="ASYNC_WARN"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </logger>
+        
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_INFO"/>
+            <appender-ref ref="ASYNC_WARN"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </root>
+    </springProfile>
+
+    <!-- 默认配置（未指定环境时使用） -->
+    <springProfile name="!local &amp; !pro">
+        <logger name="com.lcx" level="INFO" additivity="false">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_INFO"/>
+            <appender-ref ref="ASYNC_WARN"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </logger>
+        
+        <!-- 第三方框架日志级别控制 -->
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.springframework.boot" level="INFO"/>
+        <logger name="org.springframework.ai" level="INFO"/>
+        <logger name="org.redisson" level="WARN"/>
+        <logger name="org.apache" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+        <logger name="com.zaxxer.hikari" level="WARN"/>
+        
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="ASYNC_INFO"/>
+            <appender-ref ref="ASYNC_WARN"/>
+            <appender-ref ref="ASYNC_ERROR"/>
+        </root>
+    </springProfile>
 
 </configuration>
