@@ -1,7 +1,7 @@
-import React, { useState, KeyboardEvent, useRef } from 'react';
+import React, { useState, KeyboardEvent } from 'react';
 import { Input, Dropdown } from 'antd';
 import type { MenuProps } from 'antd';
-import { UpOutlined, StopOutlined, PlusOutlined, PaperClipOutlined, DeleteOutlined, HistoryOutlined } from '@ant-design/icons';
+import { UpOutlined, StopOutlined, PlusOutlined, PaperClipOutlined, DeleteOutlined } from '@ant-design/icons';
 
 const { TextArea } = Input;
 
@@ -30,7 +30,6 @@ const MessageInput: React.FC<MessageInputProps> = React.memo(({
   placeholder = "在此处提问"
 }) => {
   const [message, setMessage] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleSend = () => {
     const trimmedMessage = message.trim();

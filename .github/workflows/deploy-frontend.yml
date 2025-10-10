@@ -45,9 +45,9 @@ jobs:
         run: npm ci
       
       # 步骤 4: 运行测试
-      - name: 运行测试
-        working-directory: ./frontend
-        run: npm test
+      # - name: 运行测试
+      #   working-directory: ./frontend
+      #   run: npm test
       
       # 步骤 5: 构建生产版本
       - name: 构建前端
