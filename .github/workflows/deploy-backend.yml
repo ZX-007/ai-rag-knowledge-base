@@ -1,0 +1,250 @@
+name: 部署后端到服务器
+
+# 触发条件
+on:
+  # 推送 tag 时自动触发
+  push:
+    tags:
+      - 'v*.*.*'  # 如 v1.0.0, v1.1.0, v2.0.0
+  
+  # 支持手动触发
+  workflow_dispatch:
+    inputs:
+      tag_version:
+        description: '镜像版本标签（如 v1.1.0）'
+        required: true
+        type: string
+      environment:
+        description: '部署环境'
+        required: true
+        type: choice
+        options:
+          - production
+          - staging
+        default: 'production'
+
+env:
+  DOCKER_IMAGE: white0618/ai-knowledge-base  # 替换为你的 Docker Hub 用户名/仓库名
+  REGISTRY: docker.io
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    environment: pro
+    
+    steps:
+      # 步骤 1: 检出代码
+      - name: 检出代码
+        uses: actions/checkout@v4
+      
+      # 步骤 2: 设置 Java 环境
+      - name: 设置 Java 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+      
+      # 步骤 3: 获取版本号
+      - name: 获取版本号
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" == "push" ]; then
+            # 从 tag 获取版本号
+            VERSION=${GITHUB_REF#refs/tags/}
+          else
+            # 从手动输入获取版本号
+            VERSION=${{ github.event.inputs.tag_version }}
+          fi
+          echo "VERSION=${VERSION}" >> $GITHUB_OUTPUT
+          echo "📦 构建版本: ${VERSION}"
+      
+      # 步骤 4: 设置 Docker Buildx
+      - name: 设置 Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      # 步骤 5: 登录 Docker Hub
+      - name: 登录 Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      
+      # 步骤 6: 构建、推送并保存 Docker 镜像
+      - name: 构建 Docker 镜像并加载到本地
+        id: docker_build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          load: true  # 加载到本地 Docker daemon，与push互斥
+          tags: |
+            ${{ env.DOCKER_IMAGE }}:${{ steps.get_version.outputs.VERSION }}
+            ${{ env.DOCKER_IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: 推送镜像到 Docker Hub 并保存为 tar.gz
+        run: |
+          VERSION=${{ steps.get_version.outputs.VERSION }}
+          
+          # 推送镜像到 Docker Hub
+          echo "📤 推送镜像到 Docker Hub..."
+          docker push ${DOCKER_IMAGE}:${VERSION}
+          docker push ${DOCKER_IMAGE}:latest
+          
+          # 保存镜像为 tar.gz
+          echo "💾 保存镜像为 tar.gz..."
+          docker save ${DOCKER_IMAGE}:${VERSION} | gzip > ai-knowledge-base.tar.gz
+          
+          # 显示文件信息
+          echo "✅ 镜像保存完成:"
+          ls -lh ai-knowledge-base.tar.gz
+      
+      # 步骤 7: 配置 SSH 并上传文件到服务器
+      - name: 配置 SSH 密钥
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.BACKEND_SERVER_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+      
+      - name: 上传镜像文件到服务器
+        timeout-minutes: 60
+        run: |
+          echo "📤 开始上传镜像文件..."
+          echo "文件大小: $(ls -lh ai-knowledge-base.tar.gz | awk '{print $5}')"
+          echo "目标: ${{ secrets.BACKEND_SERVER_USERNAME }}@${{ secrets.BACKEND_SERVER_HOST }}:${{ secrets.BACKEND_DEPLOY_DIR }}/"
+          
+          # 使用 scp 直接上传文件（不解压）
+          scp -C -v \
+            -o StrictHostKeyChecking=no \
+            -o ServerAliveInterval=30 \
+            -o ServerAliveCountMax=20 \
+            -o TCPKeepAlive=yes \
+            -P ${{ secrets.BACKEND_SERVER_PORT || 22 }} \
+            -i ~/.ssh/deploy_key \
+            ai-knowledge-base.tar.gz \
+            ${{ secrets.BACKEND_SERVER_USERNAME }}@${{ secrets.BACKEND_SERVER_HOST }}:${{ secrets.BACKEND_DEPLOY_DIR }}/ai-knowledge-base.tar.gz
+          
+          echo "✅ 镜像文件上传完成！"
+      
+      # 步骤 8: 上传 docker-compose.yml
+      - name: 上传 docker-compose.yml
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.BACKEND_SERVER_HOST }}
+          username: ${{ secrets.BACKEND_SERVER_USERNAME }}
+          key: ${{ secrets.BACKEND_SERVER_SSH_KEY }}
+          port: ${{ secrets.BACKEND_SERVER_PORT || 22 }}
+          source: "docker-compose.yml"
+          target: ${{ secrets.BACKEND_DEPLOY_DIR }}
+          strip_components: 0
+      
+      # 步骤 9: 在服务器上部署
+      - name: 在服务器上加载镜像并部署
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.BACKEND_SERVER_HOST }}
+          username: ${{ secrets.BACKEND_SERVER_USERNAME }}
+          key: ${{ secrets.BACKEND_SERVER_SSH_KEY }}
+          port: ${{ secrets.BACKEND_SERVER_PORT || 22 }}
+          script: |
+            DEPLOY_DIR="${{ secrets.BACKEND_DEPLOY_DIR }}"
+            VERSION="${{ steps.get_version.outputs.VERSION }}"
+            IMAGE_NAME="${{ env.DOCKER_IMAGE }}"
+            
+            echo "=== 开始部署后端服务 ==="
+            echo "部署目录: ${DEPLOY_DIR}"
+            echo "镜像版本: ${VERSION}"
+            
+            cd "${DEPLOY_DIR}"
+            
+            # 1. 创建镜像备份目录
+            mkdir -p images
+            
+            # 2. 停止旧服务（先停止，释放资源）
+            if [ -f "docker-compose.yml" ]; then
+              echo "🛑 停止旧服务..."
+              docker-compose down
+            fi
+            
+            # 3. 加载 Docker 镜像
+            echo "📦 加载 Docker 镜像..."
+            docker load < ai-knowledge-base.tar.gz
+            
+            # 4. 保存镜像文件到 images 目录（使用版本号命名）
+            echo "💾 保存镜像备份到 images/ai-knowledge-base_${VERSION}.tar.gz"
+            mv ai-knowledge-base.tar.gz images/ai-knowledge-base_${VERSION}.tar.gz
+            echo "备份大小: $(du -h images/ai-knowledge-base_${VERSION}.tar.gz | cut -f1)"
+            
+            # 5. 更新 docker-compose.yml 中的镜像版本
+            echo "🔧 更新 docker-compose.yml 镜像版本为: ${VERSION}"
+            sed -i "s|image: ${IMAGE_NAME}:.*|image: ${IMAGE_NAME}:${VERSION}|g" docker-compose.yml
+            
+            # 6. 启动新版本服务
+            echo "🚀 启动新版本服务..."
+            docker-compose up -d
+            
+            # 7. 等待服务启动
+            echo "⏳ 等待服务启动..."
+            sleep 10
+            
+            # 8. 检查服务状态
+            echo "✅ 检查服务状态..."
+            docker-compose ps
+            
+            # 9. 清理未使用的镜像
+            echo "🧹 清理旧镜像..."
+            docker image prune -f
+            
+            # 10. 查看服务日志（最后20行）
+            echo ""
+            echo "📋 服务日志（最后20行）:"
+            docker-compose logs --tail=20 ai-knowledge-base-app
+            
+            # 11. 健康检查
+            echo ""
+            echo "🏥 健康检查..."
+            if docker ps | grep -q ai-knowledge-base-app; then
+              echo "✅ 后端服务运行正常"
+              
+              # 尝试访问健康检查端点（如果有）
+              if curl -f http://localhost:8080/actuator/health > /dev/null 2>&1; then
+                echo "✅ 健康检查接口响应正常"
+              else
+                echo "⚠️  健康检查接口未响应（可能还在启动中）"
+              fi
+            else
+              echo "❌ 后端服务启动失败"
+              exit 1
+            fi
+            
+            echo ""
+            echo "=== 部署完成！ ==="
+            echo "镜像版本: ${IMAGE_NAME}:${VERSION}"
+            echo "容器名称: ai-knowledge-base-app"
+            echo "端口映射: 8080:8080"
+      
+      # 步骤 10: 验证部署
+      - name: 验证部署
+        run: |
+          echo "✅ 部署流程完成"
+          echo "📦 镜像已推送到 Docker Hub: ${{ env.DOCKER_IMAGE }}:${{ steps.get_version.outputs.VERSION }}"
+          echo "🚀 服务已在服务器上启动"
+      
+      # 步骤 11: 部署成功通知
+      - name: 部署成功通知
+        if: success()
+        run: |
+          echo "🎉 后端部署成功！"
+          echo "版本: ${{ steps.get_version.outputs.VERSION }}"
+          echo "镜像: ${{ env.DOCKER_IMAGE }}:${{ steps.get_version.outputs.VERSION }}"
+          echo "部署时间: $(date)"
+      
+      # 步骤 12: 部署失败通知
+      - name: 部署失败通知
+        if: failure()
+        run: |
+          echo "❌ 后端部署失败！"
+          echo "请检查日志并修复问题"
+

@@ -92,7 +92,6 @@ Thumbs.db
 desktop.ini
 
 ### Docker 相关 ###
-.dockerignore
 docker-compose.override.yml
 
 ### 其他工具和IDE ###

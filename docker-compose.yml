@@ -1,6 +1,6 @@
 services:
   ai-knowledge-base-app:
-    image: white0618/ai-knowledge-base:v1.1.0
+    image: white0618/ai-knowledge-base:v*.*.*
     container_name: ai-knowledge-base-app
     restart: unless-stopped
     ports:
@@ -13,14 +13,14 @@ services:
       - DATASOURCE_PORT=5432
       - DATASOURCE_DATABASE_NAME=ai-rag-knowledge-base
       - DATASOURCE_USERNAME=root
-      - DATASOURCE_PASSWORD=root
-      - OPENAI_BASE_URL=http://host.docker.internal:1234
+      - DATASOURCE_PASSWORD=root@321
+      - OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode
       - OPENAI_API_KEY=${DASHSCOPE_API_KEY}
-      - OPENAI_CHAT_MODEL=deepseek-r1-distill-qwen-1.5b
-      - OPENAI_EMBEDDING_MODEL=text-embedding-nomic-embed-text-v1.5@q5_k_m
+      - OPENAI_CHAT_MODEL=qwen3-max
+      - OPENAI_EMBEDDING_MODEL=text-embedding-v3
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - REDIS_PASSWORD=root
+      - REDIS_PASSWORD=root@321
     depends_on:
       - redis
       - pgvector
@@ -33,7 +33,7 @@ services:
     restart: always
     privileged: true
     ports:
-      - "6379:6379"
+      - "16379:6379"
     volumes:
       - ./redis/data:/data
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
@@ -41,7 +41,7 @@ services:
     networks:
       - network
     healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "root", "ping" ]
+      test: [ "CMD", "redis-cli", "-a", "root@321", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 3
@@ -52,8 +52,8 @@ services:
     restart: always
     environment:
       - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=root
-      - PGPASSWORD=root
+      - POSTGRES_PASSWORD=root@321
+      - PGPASSWORD=root@321
       - POSTGRES_DB=ai-rag-knowledge-base
     volumes:
       - ./pgvector/data:/var/lib/postgresql/data
@@ -63,7 +63,7 @@ services:
         max-size: 10m
         max-file: "3"
     ports:
-      - '5432:5432'
+      - '15432:5432'
     healthcheck:
       test: "pg_isready -U root -d ai-rag-knowledge-base"
       interval: 5s

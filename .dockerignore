@@ -1,0 +1,64 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# GitHub
+.github
+
+# IDE
+.idea
+.trae
+.vscode
+*.iml
+*.ipr
+*.iws
+
+# Build outputs
+target
+*/target
+dist
+build
+
+# Maven
+.mvn
+mvnw
+mvnw.cmd
+
+# Logs
+*.log
+logs
+*/logs
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+docs
+*.md
+README.md
+LICENSE
+
+# Frontend
+frontend
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# Data
+data
+*/data
+
+# Temp files
+*.tmp
+*.bak
+*.swp
+*~
+
+# Test files
+**/test/**
+**/*test*
+
