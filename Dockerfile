@@ -26,6 +26,11 @@ RUN mvn -B -q package -DskipTests -pl ai-knowledge-app -am
 # ===== Runtime stage =====
 FROM eclipse-temurin:17-jre AS runtime
 
+# 安装 curl 用于健康检查
+RUN apt-get update && \
+    apt-get install -y curl && \
+    rm -rf /var/lib/apt/lists/*
+
 ENV TZ=Asia/Shanghai \
     SPRING_PROFILES_ACTIVE=prod \
     JAVA_OPTS="-Djava.security.egd=file:/dev/./urandom"

@@ -48,3 +48,20 @@ logging:
     org.hibernate: warn
     com.lcx: info
   config: classpath:logback-spring.xml
+
+# Management configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: never  # 生产环境不暴露详细信息
+      probes:
+        enabled: true
+  health:
+    redis:
+      enabled: true
+    db:
+      enabled: true
