@@ -1,8 +1,11 @@
 services:
   ai-knowledge-base-app:
-    image: white0618/ai-knowledge-base:v1.1.0
+    image: white0618/ai-knowledge-base:v*.*.*
     container_name: ai-knowledge-base-app
     restart: unless-stopped
+    depends_on:
+      - redis
+      - pgvector
     ports:
       - "8080:8080"
     volumes:
@@ -13,64 +16,67 @@ services:
       - DATASOURCE_PORT=5432
       - DATASOURCE_DATABASE_NAME=ai-rag-knowledge-base
       - DATASOURCE_USERNAME=root
-      - DATASOURCE_PASSWORD=root
-      - OPENAI_BASE_URL=http://host.docker.internal:1234
+      - DATASOURCE_PASSWORD=root@321
+      - OPENAI_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode
       - OPENAI_API_KEY=${DASHSCOPE_API_KEY}
-      - OPENAI_CHAT_MODEL=deepseek-r1-distill-qwen-1.5b
-      - OPENAI_EMBEDDING_MODEL=text-embedding-nomic-embed-text-v1.5@q5_k_m
+      - OPENAI_CHAT_MODEL=qwen3-max
+      - OPENAI_EMBEDDING_MODEL=text-embedding-v3
       - REDIS_HOST=redis
       - REDIS_PORT=6379
-      - REDIS_PASSWORD=root
-    depends_on:
-      - redis
-      - pgvector
+      - REDIS_PASSWORD=root@321
     networks:
       - network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
   redis:
-    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/redis:6.2
+    image: redis:6.2
     container_name: redis
     restart: always
     privileged: true
     ports:
-      - "6379:6379"
+      - "16379:6379"
     volumes:
       - ./redis/data:/data
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
-    command: redis-server /usr/local/etc/redis/redis.conf
     networks:
       - network
+    command: redis-server /usr/local/etc/redis/redis.conf
     healthcheck:
-      test: [ "CMD", "redis-cli", "-a", "root", "ping" ]
+      test: [ "CMD", "redis-cli", "-a", "root@321", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 3
 
   pgvector:
-    image: registry.cn-hangzhou.aliyuncs.com/xfg-studio/pgvector:v0.5.0
+    image: pgvector:v0.5.0
     container_name: pgvector
     restart: always
-    environment:
-      - POSTGRES_USER=root
-      - POSTGRES_PASSWORD=root
-      - PGPASSWORD=root
-      - POSTGRES_DB=ai-rag-knowledge-base
+    ports:
+      - '15432:5432'
     volumes:
       - ./pgvector/data:/var/lib/postgresql/data
       - ./pgvector/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - network
     logging:
       options:
         max-size: 10m
         max-file: "3"
-    ports:
-      - '5432:5432'
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=root@321
+      - PGPASSWORD=root@321
+      - POSTGRES_DB=ai-rag-knowledge-base
     healthcheck:
       test: "pg_isready -U root -d ai-rag-knowledge-base"
       interval: 5s
       timeout: 30s
       retries: 10
-    networks:
-      - network
 
 networks:
   network:

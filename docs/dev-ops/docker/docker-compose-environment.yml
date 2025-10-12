@@ -1,13 +1,15 @@
 # docker compose -f docker-compose-environment.yml up -d
 services:
   ollama:
-    image: ollama/ollama:0.5.10
+    image: ollama:0.5.10
     container_name: ollama
     restart: unless-stopped
     ports:
       - "11434:11434"
     volumes:
       - /opt/llm/ollama/models:/root/.ollama/models
+    networks:
+      - network
     entrypoint:
       - /bin/sh
       - -c
@@ -17,8 +19,6 @@ services:
         sleep 5
         /bin/ollama run deepseek-r1:1.5b
         wait
-    networks:
-      - network
     # 对话模型：ollama run deepseek-r1:1.5b
     # 嵌入模型：ollama run nomic-embed-text
 
@@ -32,9 +32,9 @@ services:
     volumes:
       - ./redis/data:/data
       - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
-    command: redis-server /usr/local/etc/redis/redis.conf
     networks:
       - network
+    command: redis-server /usr/local/etc/redis/redis.conf
     healthcheck:
       test: [ "CMD", "redis-cli", "-a", "root", "ping" ]
       interval: 10s
@@ -45,8 +45,13 @@ services:
     container_name: redis-admin
     hostname: redis-commander
     restart: always
+    depends_on:
+      redis:
+        condition: service_healthy
     ports:
       - "8081:8081"
+    networks:
+      - network
     environment:
       - REDIS_HOSTS=local:redis:6379:0:admin321
       - HTTP_USER=admin
@@ -54,53 +59,47 @@ services:
       - LANG=C.UTF-8
       - LANGUAGE=C.UTF-8
       - LC_ALL=C.UTF-8
-    networks:
-      - network
-    depends_on:
-      redis:
-        condition: service_healthy
 
   pgvector:
-    image: pgvector/pgvector:v0.5.0
+    image: pgvector:v0.5.0
     container_name: pgvector
     restart: always
+    ports:
+      - '5432:5432'
+    volumes:
+      - ./pgvector/data:/var/lib/postgresql/data
+      - ./pgvector/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - network
+    logging:
+      options:
+        max-size: 10m
+        max-file: "3"
     environment:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=root
       - PGPASSWORD=root
       - POSTGRES_DB=ai-rag-knowledge-base
-    volumes:
-      - ./pgvector/data:/var/lib/postgresql/data
-      - ./pgvector/sql/init.sql:/docker-entrypoint-initdb.d/init.sql
-    logging:
-      options:
-        max-size: 10m
-        max-file: "3"
-    ports:
-      - '5432:5432'
     healthcheck:
       test: "pg_isready -U root -d ai-rag-knowledge-base"
       interval: 5s
       timeout: 30s
       retries: 10
-    networks:
-      - network
-      
   # pg 管理工具
   pg-admin:
     image: dpage/pgadmin4:9.1.0
     container_name: pg-admin
     restart: always
-    ports:
-      - "5050:80"
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=admin@qq.com
-      - PGADMIN_DEFAULT_PASSWORD=admin
     depends_on:
       pgvector:
         condition: service_healthy
+    ports:
+      - "5050:80"
     networks:
       - network
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@qq.com
+      - PGADMIN_DEFAULT_PASSWORD=admin
 
 networks:
   network:
