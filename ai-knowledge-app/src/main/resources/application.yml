@@ -37,6 +37,19 @@ spring:
         index-type: HNSW
         distance-type: COSINE_DISTANCE
         dimensions: 768
+    mcp:
+      client:
+        enabled: true
+        name: secure-filesystem-client
+        version: 0.2.0
+        initialized: true
+        request-timeout: 30s
+        type: async # 所有客户端必须统一为同步或异步模式，不支持混合使用。
+        root-change-notification: true
+        toolcallback:
+          enabled: true
+        stdio:
+          servers-configuration: classpath:/config/mcp-servers-config.json
 
 # Redis configuration
 redis:
