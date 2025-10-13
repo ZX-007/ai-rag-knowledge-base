@@ -48,4 +48,6 @@
         </dependency>
     </dependencies>
 
+    <!-- build 配置已从父 pom.xml 继承 -->
+
 </project>
