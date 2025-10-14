@@ -31,4 +31,4 @@ logging:
     console:
   # 文件日志配置：所有日志输出到文件，用于调试和问题排查
   file:
-    name: data/log/${spring.application.name}.log
+    name: data/log/mcp/${spring.application.name}.log
