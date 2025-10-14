@@ -1,0 +1,9 @@
+# 开发环境配置
+
+logging:
+  # 日志级别配置：开发环境使用 DEBUG 级别，方便调试
+  level:
+    root: INFO
+    org.springframework: INFO
+    com.lcx.mcp.server: DEBUG  # 应用日志使用 DEBUG，输出详细信息
+

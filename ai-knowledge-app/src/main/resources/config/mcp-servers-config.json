@@ -7,6 +7,15 @@
         "@modelcontextprotocol/server-filesystem",
         "D:\\workspace\\Java\\ai-knowledge-base"
       ]
+    },
+    "systemInfo": {
+      "command": "java",
+      "args": [
+        "-Dspring.profiles.active=local",
+        "-Dspring.ai.mcp.server.stdio=true",
+        "-jar",
+        "D:\\workspace\\Java\\ai-knowledge-base\\ai-mcp-server\\mcp-server-systemInfo\\target\\mcp-server-systemInfo.jar"
+      ]
     }
   }
 }

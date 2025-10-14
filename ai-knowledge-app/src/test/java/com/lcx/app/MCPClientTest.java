@@ -33,7 +33,6 @@ public class MCPClientTest {
         for (ToolCallback toolCallback : toolCallbacks) {
             System.out.println(toolCallback.getToolDefinition().name());
         }
-
     }
 
     @Test
@@ -62,6 +61,20 @@ public class MCPClientTest {
                         .build())
                 .build();
 
+        System.out.println("\n>>> QUESTION: " + userInput);
+        System.out.println("\n>>> ASSISTANT: " + chatClient.prompt(userInput).call().content());
+    }
+
+    @Test
+    public void test_workflow() {
+        String userInput = "获取电脑配置";
+        userInput = "获取电脑配置 在 D:\\workspace\\Java\\ai-knowledge-base\\data 文件夹下，创建 电脑.txt 把电脑配置写入 电脑.txt";
+        var chatClient = chatClientBuilder
+                .defaultToolCallbacks(toolCallbackProvider)
+                .defaultOptions(OpenAiChatOptions.builder()
+                        .model("qwen3-max")
+                        .build())
+                .build();
         System.out.println("\n>>> QUESTION: " + userInput);
         System.out.println("\n>>> ASSISTANT: " + chatClient.prompt(userInput).call().content());
     }

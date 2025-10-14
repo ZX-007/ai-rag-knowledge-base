@@ -1,0 +1,9 @@
+# 生产环境配置
+
+logging:
+  # 日志级别配置：生产环境使用 INFO/WARN 级别，减少日志输出，提升性能
+  level:
+    root: WARN
+    org.springframework: WARN
+    com.lcx.mcp.server: INFO  # 应用日志使用 INFO，只记录关键信息
+
