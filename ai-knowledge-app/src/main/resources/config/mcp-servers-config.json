@@ -11,10 +11,25 @@
     "systemInfo": {
       "command": "java",
       "args": [
+        "-Dfile.encoding=UTF-8",
+        "-Dsun.jnu.encoding=UTF-8",
         "-Dspring.profiles.active=local",
         "-Dspring.ai.mcp.server.stdio=true",
         "-jar",
         "D:\\workspace\\Java\\ai-knowledge-base\\ai-mcp-server\\mcp-server-systemInfo\\target\\mcp-server-systemInfo.jar"
+      ]
+    },
+    "post-CSDN": {
+      "command": "java",
+      "args": [
+        "-Dfile.encoding=UTF-8",
+        "-Dsun.jnu.encoding=UTF-8",
+        "-Dspring.profiles.active=local",
+        "-Dspring.ai.mcp.server.stdio=true",
+        "-Dcsdn.api.categories=Java场景面试宝典",
+        "-Dcsdn.api.cookie=uuid_tt_dd=10_21028300260-1753456099227-316694; fid=20_85341549170-1753456101247-517882; UserName=2301_80465378; UserInfo=dfbc53bf50cf49b59e8567b3c6361a87; UserToken=dfbc53bf50cf49b59e8567b3c6361a87; UserNick=ZX-07; AU=811; UN=2301_80465378; BT=1753962628382; p_uid=U010000; csdn_newcert_2301_80465378=1; c_adb=1; c_ab_test=1; creative_btn_mp=3; vip_auto_popup=1; dc_session_id=10_1760424509568.530024; c_first_ref=www.bing.com; c_first_page=https%3A//www.csdn.net/; c_dsid=11_1760424511123.534877; c_segment=6; c-sidebar-collapse=0; dc_sid=38ea92bd88633815056f815f535443bb; log_Id_view=74; log_Id_click=1; c_pref=https%3A//www.bing.com/; c_ref=https%3A//www.csdn.net/; c_page_id=default; dc_tos=t4409e; log_Id_pv=2",
+        "-jar",
+        "D:\\workspace\\Java\\ai-knowledge-base\\ai-mcp-server\\mcp-server-csdn\\target\\mcp-server-csdn.jar"
       ]
     }
   }
