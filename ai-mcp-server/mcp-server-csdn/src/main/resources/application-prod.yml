@@ -1,16 +1,18 @@
 # 生产环境配置
-server:
-  port: 8081
+# 可与传输模式组合使用：
+# - java -jar mcp-server-csdn.jar --spring.profiles.active=prod,stdio
+# - java -jar mcp-server-csdn.jar --spring.profiles.active=prod,sse
 
 logging:
-  # 日志级别配置：生产环境使用 INFO/WARN 级别，减少日志输出，提升性能
   level:
-    root: WARN
-    org.springframework: WARN
-    com.lcx.mcp.server.csdn: INFO  # 应用日志使用 INFO，只记录关键信息
+    root: WARN  # 生产环境：只输出 WARN 及以上日志，减少日志量
+    okhttp3: WARN  # OkHttp 日志：只记录警告和错误
+    retrofit2: INFO  # Retrofit HTTP 请求日志：INFO 级别
+    org.springframework: WARN  # Spring 框架日志：只记录警告和错误
+    org.springframework.ai: INFO  # Spring AI 日志：INFO 级别，记录关键操作
+    com.lcx.mcp.server.csdn: INFO  # 应用日志：INFO 级别，记录关键业务信息
 
 csdn:
   api:
-    categories: ${CSDN_CATEGORIES:}
-    cookie: ${CSDN_COOKIE:}
-
+    categories: ${CSDN_API_CATEGORIES}
+    cookie: ${CSDN_API_COOKIE}

@@ -1,0 +1,25 @@
+# SSE 模式配置 - 通过 HTTP Server-Sent Events 通信
+# 启动方式：java -jar mcp-server-csdn.jar --spring.profiles.active=sse
+
+server:
+  port: 8081
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+      enabled: true
+
+spring:
+  main:
+    # 可以显示启动横幅
+    banner-mode: console
+    # SSE 模式需要启动 Web 容器
+    web-application-type: reactive
+
+logging:
+  # 可以正常输出控制台日志，因为不依赖 stdout 通信
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+  # 文件日志配置：保留用于持久化日志
+  file:
+    name: data/log/mcp/${spring.application.name}.log

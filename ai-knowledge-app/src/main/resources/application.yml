@@ -50,6 +50,10 @@ spring:
           enabled: true
         stdio:
           servers-configuration: classpath:/config/mcp-servers-config.json
+        sse:
+          connections:
+            post-csdn:
+              url: http://localhost:8081
 
 # Redis configuration
 redis:

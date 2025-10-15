@@ -1,0 +1,21 @@
+# STDIO 模式配置 - 通过标准输入输出通信
+# 启动方式：java -jar mcp-server-csdn.jar --spring.profiles.active=stdio
+
+spring:
+  ai:
+    mcp:
+      server:
+        stdio: true
+  main:
+    # 关闭 Spring Boot 启动横幅，避免向 stdout 输出非 JSON 内容
+    banner-mode: off
+    # STDIO 模式必须设置为 none，不启动 Web 容器
+    web-application-type: none
+
+logging:
+  # 关闭控制台日志输出，保证 stdout 只用于 MCP JSON-RPC 通信
+  pattern:
+    console:
+  # 文件日志配置：所有日志输出到文件，用于调试和问题排查
+  file:
+    name: data/log/mcp/${spring.application.name}.log

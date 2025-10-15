@@ -1,31 +1,18 @@
-server:
-  port: 8081
-  servlet:
-    encoding:
-      charset: UTF-8
-      force: true
-      enabled: true
+# MCP Server CSDN - 通用配置
+# 支持两种传输模式：
+# 1. STDIO 模式：java -jar mcp-server-csdn.jar --spring.profiles.active=stdio
+# 2. SSE 模式：  java -jar mcp-server-csdn.jar --spring.profiles.active=sse
+# 
+# 其他环境配置：local, dev, prod
 
 spring:
   application:
     name: mcp-server-csdn
   profiles:
-    active: prod
+    active: sse,local
   ai:
     mcp:
       server:
+        enabled: true
         name: ${spring.application.name}
         version: 0.0.1
-  main:
-    # 关闭 Spring Boot 启动横幅，避免向 stdout 输出非 JSON 内容
-    banner-mode: off
-    # STDIO 模式必须设置为 none，不启动 Web 容器
-    web-application-type: none
-
-logging:
-  # 关闭控制台日志输出，保证 stdout 只用于 MCP JSON-RPC 通信
-  pattern:
-    console:
-  # 文件日志配置：所有日志输出到文件，用于调试和问题排查
-  file:
-    name: data/log/mcp/${spring.application.name}.log
