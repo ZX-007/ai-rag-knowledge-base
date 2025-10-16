@@ -1,0 +1,52 @@
+# Maven 构建目录
+target/
+!target/*.jar
+*/target/
+!*/target/*.jar
+
+# IDE 配置
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# 编译输出
+*.class
+*.jar
+*.war
+*.ear
+
+# 日志文件
+*.log
+logs/
+data/log/
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# Git 文件
+.git/
+.gitignore
+.gitattributes
+
+# 文档和说明
+README.md
+docs/
+*.md
+
+# 测试文件
+src/test/
+
+# Docker 相关
+Dockerfile
+.dockerignore
+docker-compose.yml
+
+# 临时文件
+*.tmp
+*.bak
+*.swp
+*~
+
